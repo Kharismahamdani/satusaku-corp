@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deposit - SATUSAKU CORP.</title>
+<style>
+:root{--primary:#6C5CE7;--primary-dark:#5A4BD1;--secondary:#00CEC9;--success:#00B894;--warning:#FDCB6E;--danger:#E17055;--info:#74B9FF;--bg:#0A0A1A;--card:#1A1A2E;--border:#2D2D44;--text:#FFF;--muted:#B2BEC3;--input:#252542;--input-border:#3D3D5C}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .user-info{display:flex;align-items:center;gap:12px}
+.topbar .balance{background:var(--input);padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--success)}
+.topbar .btn-logout{padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit}
+.content{padding:20px;max-width:600px;margin:0 auto}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:16px}
+.card-title{font-size:18px;font-weight:600;margin-bottom:12px}
+.btn{padding:10px 16px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.3s;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff;width:100%}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:12px;font-weight:500;color:var(--muted);margin-bottom:6px}
+.form-group input,.form-group select{width:100%;padding:10px 14px;background:var(--input);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:14px;outline:none;font-family:inherit}
+.form-group input:focus{border-color:var(--primary)}
+.info-box{background:rgba(116,185,255,.1);border:1px solid rgba(116,185,255,.2);color:var(--info);padding:12px 16px;border-radius:8px;font-size:13px;margin-bottom:16px;line-height:1.5}
+.payment-info{background:var(--input);border:2px solid var(--success);border-radius:12px;padding:20px;margin-bottom:16px}
+.payment-info h3{color:var(--success);font-size:14px;margin-bottom:12px}
+.payment-info .row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px}
+.payment-info .row:last-child{border-bottom:none}
+.payment-info .row .label{color:var(--muted)}
+.payment-info .row .value{color:var(--text);font-weight:600}
+.payment-info .row .value.copy{cursor:pointer;color:var(--secondary);font-family:monospace}
+.status-pending{background:rgba(253,203,110,.1);border:1px solid rgba(253,203,110,.2);color:var(--warning);padding:12px;border-radius:8px;font-size:13px;text-align:center}
+.status-approved{background:rgba(0,184,148,.1);border:1px solid rgba(0,184,148,.2);color:var(--success);padding:12px;border-radius:8px;font-size:13px;text-align:center}
+.status-rejected{background:rgba(225,112,85,.1);border:1px solid rgba(225,112,85,.2);color:var(--danger);padding:12px;border-radius:8px;font-size:13px;text-align:center}
+.toast-container{position:fixed;top:15px;right:15px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:350px}
+.toast{padding:12px 16px;border-radius:8px;display:flex;align-items:center;gap:10px;animation:fadeIn .3s ease;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:13px}
+.toast.success{background:rgba(0,184,148,.95);color:#fff}.toast.error{background:rgba(225,112,85,.95);color:#fff}.toast.info{background:rgba(116,185,255,.95);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.copy-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--success);color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;z-index:9999;display:none}
+</style>
+</head>
+<body>
+<div class="topbar">
+<a href="/dashboard.html" class="logo" style="text-decoration:none;color:inherit">⚡ SATUSAKU CORP.</a>
+<div class="user-info">
+<span class="balance" id="userBalance">💰 Rp 0</span>
+<button class="btn-logout" onclick="window.location.href='/dashboard.html'">← Dashboard</button>
+</div>
+</div>
+<div class="content">
+<h1 style="font-size:24px;margin-bottom:16px">💰 Deposit Saldo</h1>
+
+<div class="info-box">
+<strong>💡 Cara Deposit:</strong> Pilih nominal, submit request, lalu transfer ke rekening Digiflazz yang tertera. Saldo akan otomatis masuk ke akun kamu setelah pembayaran diterima (auto-approve via webhook). Tidak perlu nunggu admin!
+</div>
+
+<!-- STEP 1: Request Form -->
+<div class="card" id="step1">
+<div class="card-title">1️⃣ Request Deposit</div>
+<div class="form-group">
+<label>Nominal (Rp)</label>
+<input type="number" id="depositAmount" placeholder="50000" min="10000" step="10000" />
+</div>
+<div class="form-group">
+<label>Metode Pembayaran (bank/e-wallet)</label>
+<select id="depositMethod">
+<option value="BCA">BCA</option>
+<option value="BNI">BNI</option>
+<option value="BRI">BRI</option>
+<option value="MANDIRI">MANDIRI</option>
+<option value="DANA">DANA</option>
+<option value="OVO">OVO</option>
+<option value="GoPay">GoPay</option>
+</select>
+</div>
+<button class="btn btn-primary" onclick="submitDeposit()" id="depositBtn">💳 Lanjut ke Pembayaran</button>
+</div>
+
+<!-- STEP 2: Payment Info (shown after request) -->
+<div class="card" id="step2" style="display:none">
+<div class="card-title">2️⃣ Selesaikan Pembayaran</div>
+<div class="payment-info" id="paymentInfo">
+<!-- Filled dynamically -->
+</div>
+<div class="status-pending" id="statusBox">
+⏳ <strong>Menunggu Pembayaran</strong><br>
+<span style="font-size:11px">Halaman ini akan auto-refresh saat saldo masuk. Kamu bisa juga klik "Cek Status" di bawah.</span>
+</div>
+<div style="display:flex;gap:8px;margin-top:12px">
+<button class="btn btn-primary" onclick="checkStatus()" id="checkBtn">🔄 Cek Status Sekarang</button>
+<a href="javascript:location.reload()" class="btn" style="background:transparent;border:1px solid var(--border);color:var(--muted);text-decoration:none;text-align:center">🔄 Refresh Halaman</a>
+</div>
+</div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<div class="copy-toast" id="copyToast">📋 Disalin!</div>
+<script>
+const API=window.location.origin+'/api';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'null');
+if(!token||!user||user.role!=='affiliate'){window.location.href='/login.html';}
+let pollInterval=null;
+let currentDepositId=null;
+function showToast(m,t='info'){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>d.remove(),4000);}
+function copyText(text){
+navigator.clipboard.writeText(text).then(()=>{const t=document.getElementById('copyToast');t.style.display='block';setTimeout(()=>t.style.display='none',2000);});
+}
+function formatRp(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);}
+document.getElementById('userBalance').textContent='💰 '+formatRp(user.balance);
+async function submitDeposit(){
+const amount=parseInt(document.getElementById('depositAmount').value);
+const method=document.getElementById('depositMethod').value;
+if(!amount||amount<10000){showToast('Minimal Rp 10.000','error');return;}
+document.getElementById('depositBtn').disabled=true;
+try{
+const r=await fetch(API+'/shop/deposit-request',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({amount,payment_method:method,token})});
+const d=await r.json();
+if(d.success){
+currentDepositId=d.deposit_id;
+let info=d.digiflazz;
+let html=`<h3>📋 Detail Pembayaran</h3>`;
+if(info&&(info.bank||info.account_no)){
+html+=`<div class="row"><span class="label">Bank Tujuan</span><span class="value">${info.bank||method}</span></div>`;
+if(info.account_no)html+=`<div class="row"><span class="label">No. Rekening</span><span class="value copy" onclick="copyText('${info.account_no}')">${info.account_no} 📋</span></div>`;
+if(info.account_name)html+=`<div class="row"><span class="label">Atas Nama</span><span class="value">${info.account_name}</span></div>`;
+if(info.amount)html+=`<div class="row"><span class="label">Nominal Transfer</span><span class="value copy" style="color:var(--warning)" onclick="copyText('${info.amount}')">${formatRp(info.amount)} 📋</span></div>`;
+if(info.notes)html+=`<div class="row"><span class="label">Kode Unik (Notes)</span><span class="value copy" style="color:var(--warning)" onclick="copyText('${info.notes}')">${info.notes} 📋</span></div>`;
+}else{
+html+=`<div class="row"><span class="label">Bank</span><span class="value">${method}</span></div>`;
+html+=`<p style="font-size:12px;color:var(--muted);margin-top:8px">⚠️ Info rekening otomatis belum tersedia. Silakan cek dashboard Digiflazz untuk detail pembayaran, atau hubungi admin.</p>`;
+}
+html+=`<p style="font-size:11px;color:var(--muted);margin-top:12px">💡 Saldo akan otomatis masuk setelah pembayaran diterima. Ref ID: <code>${d.ref_id}</code></p>`;
+document.getElementById('paymentInfo').innerHTML=html;
+document.getElementById('step1').style.display='none';
+document.getElementById('step2').style.display='block';
+startPolling();
+}else showToast(d.message,'error');
+}catch(e){showToast('Error: '+e.message,'error');}
+finally{document.getElementById('depositBtn').disabled=false;}
+}
+async function checkStatus(){
+if(!currentDepositId)return;
+document.getElementById('checkBtn').disabled=true;
+try{
+const r=await fetch(API+`/shop/deposit-status/${currentDepositId}`,{headers:{'Authorization':'Bearer '+token}});
+const d=await r.json();
+if(d.success){
+const dep=d.deposit;
+updateStatusUI(dep);
+if(dep.status==='approved'){
+user.balance=(user.balance||0)+dep.final_amount;
+document.getElementById('userBalance').textContent='💰 '+formatRp(user.balance);
+showToast('🎉 Deposit berhasil! Saldo sudah masuk!','success');
+stopPolling();
+}else if(dep.status==='rejected'){
+showToast('Deposit ditolak/expired. Hubungi admin jika perlu.','error');
+stopPolling();
+}
+}else showToast(d.message,'error');
+}catch(e){showToast('Error','error');}
+finally{document.getElementById('checkBtn').disabled=false;}
+}
+function updateStatusUI(dep){
+const box=document.getElementById('statusBox');
+if(dep.status==='approved'){
+box.className='status-approved';
+box.innerHTML='✅ <strong>Deposit Berhasil!</strong><br>Saldo Rp '+formatRp(dep.final_amount)+' sudah masuk ke akun Anda.';
+}else if(dep.status==='rejected'){
+box.className='status-rejected';
+box.innerHTML='❌ <strong>Deposit Gagal/Expired</strong><br>'+(dep.admin_note||'Silakan hubungi admin');
+}else{
+box.className='status-pending';
+box.innerHTML='⏳ <strong>Menunggu Pembayaran</strong><br><span style="font-size:11px">Halaman auto-cek setiap 10 detik. Klik "Cek Status" untuk manual.</span>';
+}
+}
+function startPolling(){
+stopPolling();
+pollInterval=setInterval(()=>checkStatus(),10000);
+}
+function stopPolling(){if(pollInterval){clearInterval(pollInterval);pollInterval=null;}}
+</script>
+</body>
+</html>

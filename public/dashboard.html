@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard - SATUSAKU CORP.</title>
+<style>
+:root{--primary:#6C5CE7;--primary-dark:#5A4BD1;--secondary:#00CEC9;--success:#00B894;--warning:#FDCB6E;--danger:#E17055;--info:#74B9FF;--bg:#0A0A1A;--card:#1A1A2E;--border:#2D2D44;--text:#FFF;--muted:#B2BEC3;--input:#252542;--input-border:#3D3D5C}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .user-info{display:flex;align-items:center;gap:12px}
+.topbar .user-info .balance{background:var(--input);padding:6px 12px;border-radius:8px;font-size:13px;font-weight:600;color:var(--success)}
+.topbar .user-info .tier{padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:rgba(108,92,231,.2);color:var(--primary)}
+.topbar .user-info .btn-logout{padding:6px 12px;border:1px solid var(--border);background:transparent;color:var(--muted);border-radius:6px;cursor:pointer;font-size:12px;font-family:inherit}
+.tabs{display:flex;gap:4px;background:var(--input);border-radius:8px;padding:3px;margin:16px 20px;overflow-x:auto}
+.tab{padding:8px 16px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;transition:.3s;white-space:nowrap;font-family:inherit}
+.tab:hover{color:var(--text)}.tab.active{background:var(--primary);color:#fff}
+.content{padding:0 20px 20px}
+.tab-content{display:none}.tab-content.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center}
+.stat-card .label{font-size:11px;color:var(--muted);margin-bottom:4px}.stat-card .value{font-size:20px;font-weight:700}
+.stat-card .value.green{color:var(--success)}.stat-card .value.blue{color:var(--info)}.stat-card .value.yellow{color:var(--warning)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.ref-link-box{background:var(--input);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.ref-link-box input{flex:1;background:transparent;border:none;color:var(--text);font-size:13px;font-family:monospace;outline:none}
+.ref-link-box button{padding:8px 16px;background:var(--primary);color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit}
+.ref-link-box button:hover{background:var(--primary-dark)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--input);padding:8px 10px;text-align:left;font-weight:600;color:var(--muted);position:sticky;top:0}
+td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge.success{background:rgba(0,184,148,.2);color:var(--success)}.badge.pending{background:rgba(253,203,110,.2);color:var(--warning)}.badge.error{background:rgba(225,112,85,.2);color:var(--danger)}
+.btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:.3s;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}.btn-primary{background:var(--primary);color:#fff}.btn-success{background:var(--success);color:#fff}.btn-danger{background:var(--danger);color:#fff}.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.form-group{margin-bottom:12px}.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:8px 12px;background:var(--input);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.placeholder{text-align:center;padding:30px;color:var(--muted);font-size:13px}
+.toast-container{position:fixed;top:15px;right:15px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:350px}
+.toast{padding:12px 16px;border-radius:8px;display:flex;align-items:center;gap:10px;animation:fadeIn .3s ease;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:13px}
+.toast.success{background:rgba(0,184,148,.95);color:#fff}.toast.error{background:rgba(225,112,85,.95);color:#fff}.toast.info{background:rgba(116,185,255,.95);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:768px){.stats{grid-template-columns:1fr 1fr}.topbar{flex-direction:column;gap:8px}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<div class="logo">⚡ SATUSAKU CORP.</div>
+<div class="user-info">
+<span id="tierBadge" class="tier">BASIC</span>
+<span id="balanceDisplay" class="balance">💰 Rp 0</span>
+<button class="btn-logout" onclick="logout()">Logout</button>
+</div>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="showTab('home')">🏠 Home</button>
+<button class="tab" onclick="showTab('orders')">📦 Order Saya</button>
+<button class="tab" onclick="showTab('commissions')">💰 Komisi</button>
+<button class="tab" onclick="showTab('withdraw')">💳 Penarikan</button>
+<button class="tab" onclick="window.location.href='/deposit.html'">💰 Deposit</button>
+<button class="tab" onclick="window.location.href='/shop.html'">🛒 Shop</button>
+</div>
+<div class="content">
+<!-- HOME -->
+<div class="tab-content active" id="tab-home">
+<div class="stats" id="statsCards"></div>
+<div class="card">
+<div class="card-title">🔗 Link Referral Saya</div>
+<div class="ref-link-box">
+<input type="text" id="refLink" readonly />
+<button onclick="copyRefLink()">📋 Copy</button>
+</div>
+<p style="font-size:11px;color:var(--muted)">Share link ini untuk mendapatkan komisi dari setiap penjualan.</p>
+</div>
+<div class="card">
+<div class="card-title">📊 Statistik Referral</div>
+<div id="refStats"></div>
+</div>
+<div class="card">
+<div class="card-title">📜 Order Terakhir</div>
+<div class="table-wrap"><table><thead><tr><th>SKU</th><th>Customer</th><th>Harga</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="recentOrders"><tr><td colspan="5" class="placeholder">Memuat...</td></tr></tbody></table></div>
+</div>
+</div>
+<!-- ORDERS -->
+<div class="tab-content" id="tab-orders">
+<div class="card"><div class="card-title">📦 Riwayat Order</div>
+<div class="table-wrap"><table><thead><tr><th>SKU</th><th>Customer</th><th>Ref ID</th><th>Harga</th><th>SN</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="ordersTable"><tr><td colspan="7" class="placeholder">Memuat...</td></tr></tbody></table></div>
+</div>
+</div>
+<!-- COMMISSIONS -->
+<div class="tab-content" id="tab-commissions">
+<div class="card"><div class="card-title">💰 Riwayat Komisi</div>
+<div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Harga</th><th>Komisi</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="commTable"><tr><td colspan="6" class="placeholder">Memuat...</td></tr></tbody></table></div>
+</div>
+</div>
+<!-- WITHDRAW -->
+<div class="tab-content" id="tab-withdraw">
+<div class="card"><div class="card-title">💳 Tarik Saldo</div>
+<div class="stats"><div class="stat-card"><div class="label">Saldo Tersedia</div><div class="value green" id="wBalance">Rp 0</div></div>
+<div class="stat-card"><div class="label">Minimal Tarik</div><div class="value blue">Rp 50.000</div></div></div>
+<div class="form-group"><label>Nominal (kelipatan Rp 50.000)</label><input type="number" id="wAmount" placeholder="50000" step="5000" min="50000" /></div>
+<div class="form-group"><label>Nomor HP</label><input type="text" id="wPhone" placeholder="08xxxxxxxxxx" /></div>
+<div class="form-group"><label>Provider</label><select id="wProvider"><option value="dana">DANA</option><option value="ovo">OVO</option><option value="gopay">GoPay</option><option value="pulsa">Pulsa</option></select></div>
+<button class="btn btn-success" onclick="requestWithdraw()" id="wBtn">💳 Tarik Saldo</button>
+</div>
+<div class="card"><div class="card-title">📜 Riwayat Penarikan</div>
+<div class="table-wrap"><table><thead><tr><th>Nominal</th><th>Provider</th><th>No HP</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="withdrawTable"><tr><td colspan="5" class="placeholder">Memuat...</td></tr></tbody></table></div>
+</div>
+</div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script>
+const API=window.location.origin+'/api';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'null');
+if(!token||!user||user.role==='admin'){window.location.href='/login.html';}
+function headers(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
+function showToast(m,t='info'){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>d.remove(),4000);}
+function formatRp(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);}
+function showTab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+t).classList.add('active');if(t==='orders')loadOrders();if(t==='commissions')loadCommissions();if(t==='withdraw'){loadWithdrawals();document.getElementById('wBalance').textContent=formatRp(user.balance);}}
+function logout(){localStorage.clear();window.location.href='/login.html';}
+function copyRefLink(){navigator.clipboard.writeText(document.getElementById('refLink').value).then(()=>showToast('Link disalin! 📋','success'));}
+// Load dashboard
+async function loadDashboard(){
+try{const r=await fetch(API+'/affiliate/dashboard',{headers:headers()});const d=await r.json();
+if(!d.success){showToast(d.message,'error');return;}
+user.balance=d.user.balance;user.total_earned=d.user.total_earned;user.total_orders=d.user.total_orders;
+document.getElementById('balanceDisplay').textContent='💰 '+formatRp(user.balance);
+document.getElementById('tierBadge').textContent=d.user.tier.toUpperCase();
+document.getElementById('refLink').value=d.referral_link;
+document.getElementById('statsCards').innerHTML=`
+<div class="stat-card"><div class="label">Saldo</div><div class="value green">${formatRp(d.user.balance)}</div></div>
+<div class="stat-card"><div class="label">Total Earned</div><div class="value blue">${formatRp(d.user.total_earned)}</div></div>
+<div class="stat-card"><div class="label">Komisi Hari Ini</div><div class="value yellow">${formatRp(d.commission.today)}</div></div>
+<div class="stat-card"><div class="label">Total Order</div><div class="value">${d.user.total_orders}</div></div>`;
+document.getElementById('refStats').innerHTML=`
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px;text-align:center;">
+<div><div style="font-size:20px;font-weight:700;color:var(--primary)">${d.referral.totalReferrals}</div><div style="font-size:11px;color:var(--muted)">Referral</div></div>
+<div><div style="font-size:20px;font-weight:700;color:var(--success)">${d.referral.activeReferrals}</div><div style="font-size:11px;color:var(--muted)">Aktif</div></div>
+<div><div style="font-size:20px;font-weight:700;color:var(--info)">${d.referral.totalClicks}</div><div style="font-size:11px;color:var(--muted)">Total Klik</div></div>
+<div><div style="font-size:20px;font-weight:700;color:var(--warning)">${d.referral.todayClicks}</div><div style="font-size:11px;color:var(--muted)">Klik Hari Ini</div></div></div>`;
+if(d.recentOrders.length){let h='';d.recentOrders.forEach(o=>{h+=`<tr><td style="font-family:monospace">${o.buyer_sku_code}</td><td>${o.customer_no}</td><td>${formatRp(o.price_sell)}</td><td><span class="badge ${o.status}">${o.status}</span></td><td>${new Date(o.created_at).toLocaleDateString('id-ID')}</td></tr>`;});document.getElementById('recentOrders').innerHTML=h;}
+}catch(e){showToast('Error: '+e.message,'error');}
+}
+async function loadOrders(){
+try{const r=await fetch(API+'/affiliate/orders',{headers:headers()});const d=await r.json();
+if(d.orders.length){let h='';d.orders.forEach(o=>{h+=`<tr><td style="font-family:monospace">${o.buyer_sku_code}</td><td>${o.customer_no}</td><td style="font-family:monospace;font-size:10px">${o.ref_id}</td><td>${formatRp(o.price_sell)}</td><td style="font-size:10px">${o.sn||'-'}</td><td><span class="badge ${o.status}">${o.status}</span></td><td>${new Date(o.created_at).toLocaleDateString('id-ID')}</td></tr>`;});document.getElementById('ordersTable').innerHTML=h;}else{document.getElementById('ordersTable').innerHTML='<tr><td colspan="7" class="placeholder">Belum ada order</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function loadCommissions(){
+try{const r=await fetch(API+'/affiliate/commissions',{headers:headers()});const d=await r.json();
+if(d.commissions.length){let h='';d.commissions.forEach(c=>{h+=`<tr><td style="font-family:monospace">${c.buyer_sku_code}</td><td>${c.customer_no}</td><td>${formatRp(c.amount/c.rate)}</td><td style="color:var(--success);font-weight:600">${formatRp(c.amount)}</td><td><span class="badge ${c.status}">${c.status}</span></td><td>${new Date(c.created_at).toLocaleDateString('id-ID')}</td></tr>`;});document.getElementById('commTable').innerHTML=h;}else{document.getElementById('commTable').innerHTML='<tr><td colspan="6" class="placeholder">Belum ada komisi</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function loadWithdrawals(){
+try{const r=await fetch(API+'/affiliate/withdrawals',{headers:headers()});const d=await r.json();
+if(d.withdrawals.length){let h='';d.withdrawals.forEach(w=>{h+=`<tr><td>${formatRp(w.amount)}</td><td>${w.provider.toUpperCase()}</td><td>${w.phone}</td><td><span class="badge ${w.status}">${w.status}</span></td><td>${new Date(w.created_at).toLocaleDateString('id-ID')}</td></tr>`;});document.getElementById('withdrawTable').innerHTML=h;}else{document.getElementById('withdrawTable').innerHTML='<tr><td colspan="5" class="placeholder">Belum ada penarikan</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function requestWithdraw(){
+const amount=parseInt(document.getElementById('wAmount').value);
+const phone=document.getElementById('wPhone').value.trim();
+const provider=document.getElementById('wProvider').value;
+if(!amount||amount<50000){showToast('Minimal Rp 50.000','error');return;}
+if(!phone){showToast('Nomor HP wajib','error');return;}
+if(amount%50000!==0){showToast('Harus kelipatan Rp 50.000','error');return;}
+document.getElementById('wBtn').disabled=true;
+try{const r=await fetch(API+'/affiliate/withdraw',{method:'POST',headers:headers(),body:JSON.stringify({amount,phone,provider})});
+const d=await r.json();if(d.success){showToast(d.message,'success');user.balance-=amount;document.getElementById('wBalance').textContent=formatRp(user.balance);document.getElementById('balanceDisplay').textContent='💰 '+formatRp(user.balance);document.getElementById('wAmount').value='';loadWithdrawals();}else{showToast(d.message,'error');}
+}catch(e){showToast('Error','error');}
+finally{document.getElementById('wBtn').disabled=false;}
+}
+document.getElementById('tierBadge').textContent=(user.tier||'basic').toUpperCase();
+document.getElementById('balanceDisplay').textContent='💰 '+formatRp(user.balance);
+loadDashboard();
+</script>
+</body>
+</html>

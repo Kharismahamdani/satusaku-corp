@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login - SATUSAKU CORP.</title>
+<style>
+:root{--primary:#6C5CE7;--primary-dark:#5A4BD1;--secondary:#00CEC9;--success:#00B894;--danger:#E17055;--bg:#0A0A1A;--card:#1A1A2E;--border:#2D2D44;--text:#FFF;--muted:#B2BEC3;--input:#252542;--input-border:#3D3D5C}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center}
+.auth-box{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:420px;margin:20px}
+.logo{text-align:center;margin-bottom:24px}
+.logo h1{font-size:24px;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo p{color:var(--muted);font-size:12px;margin-top:4px}
+.tabs{display:flex;gap:4px;background:var(--input);border-radius:8px;padding:3px;margin-bottom:20px}
+.tab{flex:1;padding:10px;border:none;background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;border-radius:6px;transition:.3s;font-family:inherit}
+.tab.active{background:var(--primary);color:#fff}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:4px}
+.form-group input,.form-group select{width:100%;padding:10px 14px;background:var(--input);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.form-group input:focus{border-color:var(--primary)}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.3s;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.btn-primary:hover{box-shadow:0 4px 15px rgba(108,92,231,.3)}
+.tier-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.tier-card{padding:14px;border:2px solid var(--border);border-radius:10px;cursor:pointer;transition:.3s;text-align:center}
+.tier-card.selected{border-color:var(--primary);background:rgba(108,92,231,.1)}
+.tier-card h3{font-size:14px;margin-bottom:4px}
+.tier-card .price{font-size:18px;font-weight:700;color:var(--secondary)}
+.tier-card .desc{font-size:10px;color:var(--muted);margin-top:4px}
+.tier-card .bonus{font-size:11px;color:var(--success);font-weight:600;margin-top:6px}
+.error{background:rgba(225,112,85,.1);border:1px solid rgba(225,112,85,.2);color:var(--danger);padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+.success{background:rgba(0,184,148,.1);border:1px solid rgba(0,184,148,.2);color:var(--success);padding:10px;border-radius:8px;font-size:12px;margin-bottom:12px;display:none}
+.divider{text-align:center;color:var(--muted);font-size:12px;margin:16px 0;position:relative}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:40%;height:1px;background:var(--border)}
+.divider::before{left:0}.divider::after{right:0}
+.shop-link{text-align:center;margin-top:16px}
+.shop-link a{color:var(--secondary);text-decoration:none;font-size:13px}
+</style>
+</head>
+<body>
+<div class="auth-box">
+<div class="logo">
+<h1>⚡ SATUSAKU CORP.</h1>
+<p>Affiliate Game Top-up Platform</p>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="showForm('login')">Login</button>
+<button class="tab" onclick="showForm('register')">Daftar</button>
+</div>
+<div class="error" id="errorMsg"></div>
+<div class="success" id="successMsg"></div>
+<!-- LOGIN FORM -->
+<div id="loginForm">
+<div class="form-group"><label>Username</label><input type="text" id="loginUsername" placeholder="Masukkan username" /></div>
+<div class="form-group"><label>Password</label><input type="password" id="loginPassword" placeholder="Masukkan password" /></div>
+<button class="btn btn-primary" onclick="doLogin()" id="loginBtn">🔑 Login</button>
+</div>
+<!-- REGISTER FORM -->
+<div id="registerForm" style="display:none">
+<div class="form-group"><label>Username</label><input type="text" id="regUsername" placeholder="3-20 karakter" /></div>
+<div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="email@contoh.com" /></div>
+<div class="form-group"><label>Password</label><input type="password" id="regPassword" placeholder="Minimal 6 karakter" /></div>
+<div class="form-group"><label>No. HP (untuk penarikan)</label><input type="text" id="regPhone" placeholder="08xxxxxxxxxx" /></div>
+<div class="form-group"><label>Referral Code (opsional)</label><input type="text" id="regRef" placeholder="Kode referral teman" /></div>
+<p style="font-size:12px;color:var(--muted);margin:8px 0 4px">Pilih Paket Affiliate:</p>
+<div class="tier-cards">
+<div class="tier-card selected" onclick="selectTier('basic')">
+<h3>💎 Basic</h3>
+<div class="price">Rp 10.000</div>
+<div class="desc">Komisi 1%/order</div>
+</div>
+<div class="tier-card" onclick="selectTier('pro')">
+<h3>👑 Pro</h3>
+<div class="price">Rp 50.000</div>
+<div class="desc">Komisi 2%/order</div>
+<div class="bonus">Bonus saldo Rp 25.000!</div>
+</div>
+</div>
+<button class="btn btn-primary" onclick="doRegister()" id="regBtn">🚀 Daftar Sekarang</button>
+</div>
+<div class="shop-link"><a href="/shop.html">🛒 Belanja tanpa daftar? Klik disini</a></div>
+</div>
+<script>
+let selectedTier='basic';
+const API=window.location.origin+'/api';
+function showForm(t){
+document.querySelectorAll('.tab').forEach((b,i)=>{b.classList.toggle('active',i===(t==='login'?0:1))});
+document.getElementById('loginForm').style.display=t==='login'?'block':'none';
+document.getElementById('registerForm').style.display=t==='register'?'block':'none';
+hideMsg();
+}
+function selectTier(t){
+selectedTier=t;
+document.querySelectorAll('.tier-card').forEach(c=>c.classList.remove('selected'));
+event.currentTarget.classList.add('selected');
+}
+function showErr(m){const e=document.getElementById('errorMsg');e.textContent=m;e.style.display='block';document.getElementById('successMsg').style.display='none';}
+function showOk(m){const s=document.getElementById('successMsg');s.textContent=m;s.style.display='block';document.getElementById('errorMsg').style.display='none';}
+function hideMsg(){document.getElementById('errorMsg').style.display='none';document.getElementById('successMsg').style.display='none';}
+async function doLogin(){
+const u=document.getElementById('loginUsername').value.trim();
+const p=document.getElementById('loginPassword').value;
+if(!u||!p){showErr('Username dan password wajib');return;}
+document.getElementById('loginBtn').disabled=true;
+try{
+const r=await fetch(API+'/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,password:p})});
+const d=await r.json();
+if(d.success){
+localStorage.setItem('token',d.token);
+localStorage.setItem('user',JSON.stringify(d.user));
+if(d.user.role==='admin')window.location.href='/admin.html';
+else window.location.href='/dashboard.html';
+}else showErr(d.message);
+}catch(e){showErr('Error: '+e.message);}
+finally{document.getElementById('loginBtn').disabled=false;}
+}
+async function doRegister(){
+const u=document.getElementById('regUsername').value.trim();
+const e=document.getElementById('regEmail').value.trim();
+const p=document.getElementById('regPassword').value;
+const ph=document.getElementById('regPhone').value.trim();
+const ref=document.getElementById('regRef').value.trim();
+if(!u||!e||!p){showErr('Username, email, dan password wajib');return;}
+document.getElementById('regBtn').disabled=true;
+try{
+const r=await fetch(API+'/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,email:e,password:p,phone:ph,tier:selectedTier,ref:ref||undefined})});
+const d=await r.json();
+if(d.success){
+localStorage.setItem('token',d.token);
+localStorage.setItem('user',JSON.stringify(d.user));
+showOk('Registrasi berhasil! Link referral: '+d.referral_link);
+setTimeout(()=>window.location.href='/dashboard.html',1500);
+}else showErr(d.message);
+}catch(e){showErr('Error: '+e.message);}
+finally{document.getElementById('regBtn').disabled=false;}
+}
+// Check if already logged in
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'null');
+if(token&&user){
+if(user.role==='admin')window.location.href='/admin.html';
+else window.location.href='/dashboard.html';
+}
+// Check URL params for referral
+const params=new URLSearchParams(window.location.search);
+const refCode=params.get('ref');
+if(refCode){document.getElementById('regRef').value=refCode;showForm('register');}
+</script>
+</body>
+</html>

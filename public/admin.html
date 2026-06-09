@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin - SATUSAKU CORP.</title>
+<style>
+:root{--primary:#6C5CE7;--primary-dark:#5A4BD1;--secondary:#00CEC9;--success:#00B894;--warning:#FDCB6E;--danger:#E17055;--info:#74B9FF;--bg:#0A0A1A;--card:#1A1A2E;--border:#2D2D44;--text:#FFF;--muted:#B2BEC3;--input:#252542;--input-border:#3D3D5C}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .user-info{display:flex;align-items:center;gap:12px}
+.topbar .badge-admin{padding:4px 10px;border-radius:12px;font-size:11px;font-weight:600;background:rgba(225,112,85,.2);color:var(--danger)}
+.tabs{display:flex;gap:4px;background:var(--input);border-radius:8px;padding:3px;margin:16px 20px;overflow-x:auto}
+.tab{padding:8px 14px;border:none;background:transparent;color:var(--muted);font-size:12px;font-weight:500;cursor:pointer;border-radius:6px;transition:.3s;white-space:nowrap;font-family:inherit}
+.tab:hover{color:var(--text)}.tab.active{background:var(--primary);color:#fff}
+.content{padding:0 20px 20px}
+.tab-content{display:none}.tab-content.active{display:block}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.stat-card .label{font-size:10px;color:var(--muted);margin-bottom:4px}.stat-card .value{font-size:18px;font-weight:700}
+.stat-card .value.green{color:var(--success)}.stat-card .value.blue{color:var(--info)}.stat-card .value.yellow{color:var(--warning)}.stat-card .value.red{color:var(--danger)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.card-title{font-size:15px;font-weight:600;margin-bottom:12px}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{background:var(--input);padding:6px 8px;text-align:left;font-weight:600;color:var(--muted);position:sticky;top:0}
+td{padding:6px 8px;border-bottom:1px solid var(--border)}
+.badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600}
+.badge.success{background:rgba(0,184,148,.2);color:var(--success)}.badge.pending{background:rgba(253,203,110,.2);color:var(--warning)}.badge.error,.badge.rejected{background:rgba(225,112,85,.2);color:var(--danger)}.badge.approved{background:rgba(0,184,148,.2);color:var(--success)}.badge.completed{background:rgba(116,185,255,.2);color:var(--info)}
+.btn{padding:5px 12px;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;transition:.3s;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}.btn-success{background:var(--success);color:#fff}.btn-danger{background:var(--danger);color:#fff}.btn-outline{background:transparent;border:1px solid var(--border);color:var(--muted)}.btn-sm{padding:4px 8px;font-size:10px}
+.placeholder{text-align:center;padding:20px;color:var(--muted);font-size:12px}
+.toast-container{position:fixed;top:15px;right:15px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:350px}
+.toast{padding:12px 16px;border-radius:8px;display:flex;align-items:center;gap:10px;animation:fadeIn .3s ease;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:13px}
+.toast.success{background:rgba(0,184,148,.95);color:#fff}.toast.error{background:rgba(225,112,85,.95);color:#fff}.toast.info{background:rgba(116,185,255,.95);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.action-btns{display:flex;gap:4px;flex-wrap:wrap}
+.setting-row{display:flex;align-items:center;gap:12px;padding:12px;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;margin-bottom:8px;transition:.3s}
+.setting-row:hover{border-color:var(--primary);background:rgba(108,92,231,.05)}
+.setting-icon{font-size:24px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;background:var(--input);border-radius:8px;flex-shrink:0}
+.setting-body{flex:1;min-width:0}
+.setting-label{font-size:13px;font-weight:600;color:var(--text);display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.setting-key{font-size:9px;font-family:monospace;background:var(--input);padding:1px 6px;border-radius:4px;color:var(--muted);font-weight:400}
+.setting-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.setting-input-wrap{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.setting-input{width:80px;padding:8px 10px;background:var(--input);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-size:14px;font-weight:700;text-align:right;outline:none;font-family:monospace}
+.setting-input:focus{border-color:var(--primary);background:rgba(108,92,231,.1)}
+.setting-unit{font-size:11px;color:var(--muted);min-width:50px}
+@media(max-width:768px){.setting-row{flex-direction:column;align-items:flex-start;gap:8px}.setting-input-wrap{width:100%}.setting-input{flex:1;width:auto}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<div class="logo">⚡ SATUSAKU CORP. Admin</div>
+<div class="user-info"><span class="badge-admin">👑 Admin</span><button class="btn btn-outline" onclick="logout()">Logout</button></div>
+</div>
+<div class="tabs">
+<button class="tab active" onclick="showTab('dashboard')">📊 Dashboard</button>
+<button class="tab" onclick="showTab('users')">👥 Users</button>
+<button class="tab" onclick="showTab('deposits')">💰 Deposits</button>
+<button class="tab" onclick="showTab('withdrawals')">💳 Withdrawals</button>
+<button class="tab" onclick="showTab('orders')">📦 Orders</button>
+<button class="tab" onclick="showTab('commissions')">💸 Commissions</button>
+<button class="tab" onclick="showTab('settings')">⚙️ Settings</button>
+</div>
+<div class="content">
+<div class="tab-content active" id="tab-dashboard"><div class="stats" id="dashStats"></div></div>
+<div class="tab-content" id="tab-users"><div class="card"><div class="card-title">👥 Daftar Affiliate</div><div class="table-wrap"><table><thead><tr><th>Username</th><th>Email</th><th>Tier</th><th>Saldo</th><th>Total Earned</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="usersTable"><tr><td colspan="7" class="placeholder">Memuat...</td></tr></tbody></table></div></div></div>
+<div class="tab-content" id="tab-deposits"><div class="card"><div class="card-title">💰 Deposit Pending</div><div class="table-wrap"><table><thead><tr><th>User</th><th>Jumlah</th><th>Final</th><th>Metode</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="depositsTable"><tr><td colspan="6" class="placeholder">Memuat...</td></tr></tbody></table></div></div></div>
+<div class="tab-content" id="tab-withdrawals"><div class="card"><div class="card-title">💳 Penarikan</div><div class="table-wrap"><table><thead><tr><th>User</th><th>Nominal</th><th>Provider</th><th>No HP</th><th>Status</th><th>Aksi</th></tr></thead><tbody id="withdrawalsTable"><tr><td colspan="6" class="placeholder">Memuat...</td></tr></tbody></table></div></div></div>
+<div class="tab-content" id="tab-orders"><div class="card"><div class="card-title">📦 Semua Order</div><div class="table-wrap"><table><thead><tr><th>User</th><th>SKU</th><th>Customer</th><th>Harga</th><th>RC</th><th>Status</th><th>Tanggal</th></tr></thead><tbody id="ordersTable"><tr><td colspan="7" class="placeholder">Memuat...</td></tr></tbody></table></div></div></div>
+<div class="tab-content" id="tab-commissions"><div class="card"><div class="card-title">💸 Semua Komisi</div><div class="table-wrap"><table><thead><tr><th>Affiliate</th><th>SKU</th><th>Harga</th><th>Komisi</th><th>Rate</th><th>Status</th></tr></thead><tbody id="commissionsTable"><tr><td colspan="6" class="placeholder">Memuat...</td></tr></tbody></table></div></div></div>
+<div class="tab-content" id="tab-settings"><div class="card"><div class="card-title">⚙️ Pengaturan</div><div id="settingsForm"></div></div></div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script>
+const API=window.location.origin+'/api';
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'null');
+if(!token||!user||user.role!=='admin'){window.location.href='/login.html';}
+function headers(){return{'Content-Type':'application/json','Authorization':'Bearer '+token};}
+function showToast(m,t='info'){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>d.remove(),4000);}
+function formatRp(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);}
+function showTab(t){document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));document.querySelectorAll('.tab-content').forEach(d=>d.classList.remove('active'));event.target.classList.add('active');document.getElementById('tab-'+t).classList.add('active');loaders[t]?.();}
+function logout(){localStorage.clear();window.location.href='/login.html';}
+const loaders={dashboard:loadDash,users:loadUsers,deposits:loadDeposits,withdrawals:loadWithdrawals,orders:loadOrders,commissions:loadCommissions,settings:loadSettings};
+async function loadDash(){
+try{const r=await fetch(API+'/admin/dashboard',{headers:headers()});const d=await r.json();
+if(!d.success)return;const s=d.stats;
+document.getElementById('dashStats').innerHTML=`
+<div class="stat-card"><div class="label">Total Affiliate</div><div class="value blue">${s.totalUsers}</div></div>
+<div class="stat-card"><div class="label">Aktif</div><div class="value green">${s.activeUsers}</div></div>
+<div class="stat-card"><div class="label">Order Hari Ini</div><div class="value">${s.todayOrders}</div></div>
+<div class="stat-card"><div class="label">Revenue Hari Ini</div><div class="value green">${formatRp(s.todayRevenue)}</div></div>
+<div class="stat-card"><div class="label">Total Revenue</div><div class="value blue">${formatRp(s.totalRevenue)}</div></div>
+<div class="stat-card"><div class="label">Total Komisi</div><div class="value yellow">${formatRp(s.totalCommission)}</div></div>
+<div class="stat-card"><div class="label">Deposit Pending</div><div class="value red">${s.pendingDeposits}</div></div>
+<div class="stat-card"><div class="label">Withdrawal Pending</div><div class="value red">${s.pendingWithdrawals}</div></div>`;
+}catch(e){showToast('Error','error');}
+}
+async function loadUsers(){
+try{const r=await fetch(API+'/admin/users',{headers:headers()});const d=await r.json();
+if(d.users.length){let h='';d.users.forEach(u=>{h+=`<tr><td><b>${u.username}</b><br><span style="font-size:10px;color:var(--muted)">${u.email}</span></td><td style="font-size:10px">${u.email}</td><td><span class="badge ${u.tier==='pro'?'success':'pending'}">${u.tier.toUpperCase()}</span></td><td>${formatRp(u.balance)}</td><td>${formatRp(u.total_earned)}</td><td><span class="badge ${u.status}">${u.status}</span></td><td><div class="action-btns"><button class="btn btn-success btn-sm" onclick="toggleStatus(${u.id},'active')">✓</button><button class="btn btn-danger btn-sm" onclick="toggleStatus(${u.id},'suspended')">✕</button></div></td></tr>`;});document.getElementById('usersTable').innerHTML=h;}else{document.getElementById('usersTable').innerHTML='<tr><td colspan="7" class="placeholder">Belum ada affiliate</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function toggleStatus(id,status){try{await fetch(API+`/admin/users/${id}/status`,{method:'PUT',headers:headers(),body:JSON.stringify({status})});showToast('Status diubah','success');loadUsers();}catch(e){showToast('Error','error');}}
+async function loadDeposits(){
+try{const r=await fetch(API+'/admin/deposits',{headers:headers()});const d=await r.json();
+if(d.deposits.length){let h='';d.deposits.forEach(dep=>{h+=`<tr><td>${dep.username}</td><td>${formatRp(dep.amount)}</td><td>${formatRp(dep.final_amount)}</td><td>${dep.payment_method||'-'}</td><td><span class="badge ${dep.status}">${dep.status}</span></td><td>${dep.status==='pending'?`<div class="action-btns"><button class="btn btn-success btn-sm" onclick="processDeposit(${dep.id},'approved')">✓</button><button class="btn btn-danger btn-sm" onclick="processDeposit(${dep.id},'rejected')">✕</button></div>`:'-'}</td></tr>`;});document.getElementById('depositsTable').innerHTML=h;}else{document.getElementById('depositsTable').innerHTML='<tr><td colspan="6" class="placeholder">Belum ada deposit</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function processDeposit(id,status){try{await fetch(API+`/admin/deposits/${id}`,{method:'PUT',headers:headers(),body:JSON.stringify({status})});showToast('Deposit diproses','success');loadDeposits();loadDash();}catch(e){showToast('Error','error');}}
+async function loadWithdrawals(){
+try{const r=await fetch(API+'/admin/withdrawals',{headers:headers()});const d=await r.json();
+if(d.withdrawals.length){let h='';d.withdrawals.forEach(w=>{h+=`<tr><td>${w.username}</td><td>${formatRp(w.amount)}</td><td>${w.provider.toUpperCase()}</td><td>${w.phone}</td><td><span class="badge ${w.status}">${w.status}</span></td><td>${w.status==='pending'?`<div class="action-btns"><button class="btn btn-success btn-sm" onclick="processWithdrawal(${w.id},'approved')">✓ Approve</button><button class="btn btn-danger btn-sm" onclick="processWithdrawal(${w.id},'rejected')">✕ Tolak</button></div>`:`${w.status==='approved'?`<button class="btn btn-outline btn-sm" onclick="processWithdrawal(${w.id},'completed')">Tandai Selesai</button>`:'-'}`}</td></tr>`;});document.getElementById('withdrawalsTable').innerHTML=h;}else{document.getElementById('withdrawalsTable').innerHTML='<tr><td colspan="6" class="placeholder">Belum ada penarikan</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function processWithdrawal(id,status){try{await fetch(API+`/admin/withdrawals/${id}`,{method:'PUT',headers:headers(),body:JSON.stringify({status})});showToast('Withdrawal diproses','success');loadWithdrawals();loadDash();}catch(e){showToast('Error','error');}}
+async function loadOrders(){
+try{const r=await fetch(API+'/admin/orders',{headers:headers()});const d=await r.json();
+if(d.orders.length){let h='';d.orders.slice(0,50).forEach(o=>{h+=`<tr><td>${o.affiliate_username||'-'}</td><td style="font-family:monospace;font-size:10px">${o.buyer_sku_code}</td><td>${o.customer_no}</td><td>${formatRp(o.price_sell)}</td><td>${o.rc_code||'-'}</td><td><span class="badge ${o.status}">${o.status}</span></td><td>${new Date(o.created_at).toLocaleDateString('id-ID')}</td></tr>`;});document.getElementById('ordersTable').innerHTML=h;}else{document.getElementById('ordersTable').innerHTML='<tr><td colspan="7" class="placeholder">Belum ada order</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function loadCommissions(){
+try{const r=await fetch(API+'/admin/commissions',{headers:headers()});const d=await r.json();
+if(d.commissions.length){let h='';d.commissions.forEach(c=>{h+=`<tr><td>${c.affiliate_username}</td><td style="font-family:monospace">${c.buyer_sku_code}</td><td>${formatRp(c.amount/c.rate)}</td><td style="color:var(--success);font-weight:600">${formatRp(c.amount)}</td><td>${(c.rate*100).toFixed(1)}%</td><td><span class="badge ${c.status}">${c.status}</span></td></tr>`;});document.getElementById('commissionsTable').innerHTML=h;}else{document.getElementById('commissionsTable').innerHTML='<tr><td colspan="6" class="placeholder">Belum ada komisi</td></tr>';}
+}catch(e){showToast('Error','error');}
+}
+async function loadSettings(){
+try{const r=await fetch(API+'/admin/settings',{headers:headers()});const d=await r.json();
+if(!d.success)return;
+const fieldDefs=[
+{key:'commission_rate_basic',label:'Komisi Basic',desc:'Persentase komisi untuk affiliate tier Basic (decimal: 0.01 = 1%)',icon:'💎',unit:'desimal'},
+{key:'commission_rate_pro',label:'Komisi Pro',desc:'Persentase komisi untuk affiliate tier Pro (decimal: 0.02 = 2%)',icon:'👑',unit:'desimal'},
+{key:'registration_fee_basic',label:'Biaya Daftar Basic',desc:'Harga paket affiliate Basic (sekali bayar)',icon:'💰',unit:'Rp'},
+{key:'registration_fee_pro',label:'Biaya Daftar Pro',desc:'Harga paket affiliate Pro (sekali bayar)',icon:'💎',unit:'Rp'},
+{key:'pro_bonus_balance',label:'Bonus Saldo Pro',desc:'Saldo gratis yang diberikan saat user beli paket Pro',icon:'🎁',unit:'Rp'},
+{key:'min_deposit',label:'Minimal Deposit',desc:'Saldo minimum yang bisa dideposit user',icon:'💵',unit:'Rp'},
+{key:'min_withdrawal',label:'Minimal Penarikan',desc:'Penarikan terkecil yang diizinkan',icon:'💳',unit:'Rp'},
+{key:'withdrawal_multiplier',label:'Kelipatan Penarikan',desc:'Penarikan harus kelipatan nilai ini (misal 50000)',icon:'🔢',unit:'Rp'},
+{key:'holding_days',label:'Holding Days',desc:'Berapa hari komisi ditahan sebelum bisa ditarik',icon:'⏰',unit:'hari'},
+{key:'default_markup',label:'Default Markup',desc:'Persentase markup default produk (7 = 7%)',icon:'📈',unit:'%'},
+{key:'maintenance_mode',label:'Maintenance Mode',desc:'0 = Normal, 1 = Maintenance (order ditolak)',icon:'🔧',unit:'0/1'}
+];
+let h='';
+fieldDefs.forEach(f=>{
+const v=d.settings[f.key]||'0';
+h+=`<div class="setting-row"><div class="setting-icon">${f.icon}</div><div class="setting-body"><div class="setting-label">${f.label}<span class="setting-key">${f.key}</span></div><div class="setting-desc">${f.desc}</div></div><div class="setting-input-wrap"><input type="text" class="setting-input" id="set_${f.key}" value="${v}" data-unit="${f.unit}" /><span class="setting-unit">${f.unit}</span></div></div>`;
+});
+h+=`<button class="btn btn-success" onclick="saveSettings()" style="margin-top:16px;width:100%;padding:14px">💾 Simpan Semua Settings</button>`;
+document.getElementById('settingsForm').innerHTML=h;
+}catch(e){showToast('Error','error');}
+}
+async function saveSettings(){
+const settings={};document.querySelectorAll('[id^="set_"]').forEach(el=>{settings[el.id.replace('set_','')]=el.value;});
+try{await fetch(API+'/admin/settings',{method:'PUT',headers:headers(),body:JSON.stringify({settings})});showToast('Settings disimpan','success');}catch(e){showToast('Error','error');}
+}
+loadDash();
+</script>
+</body>
+</html>

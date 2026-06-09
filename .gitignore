@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Database (will be created on first run)
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Cache
+data/products.json
+data/products-pasca.json
+data/config.json
+
+# Logs
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Build outputs
+dist/
+build/
+
+# Temp
+tmp/
+temp/

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Shop - SATUSAKU CORP.</title>
+<style>
+:root{--primary:#6C5CE7;--primary-dark:#5A4BD1;--secondary:#00CEC9;--success:#00B894;--warning:#FDCB6E;--danger:#E17055;--info:#74B9FF;--bg:#0A0A1A;--card:#1A1A2E;--border:#2D2D44;--text:#FFF;--muted:#B2BEC3;--input:#252542;--input-border:#3D3D5C}
+*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.topbar{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100}
+.topbar .logo{font-size:18px;font-weight:700;background:linear-gradient(135deg,var(--primary),var(--secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar .user-actions{display:flex;gap:8px;align-items:center}
+.topbar .balance{background:var(--input);padding:6px 12px;border-radius:8px;font-size:12px;font-weight:600;color:var(--success);display:none}
+.search-box{padding:16px 20px}
+.search-box input{width:100%;padding:10px 14px;background:var(--input);border:1px solid var(--input-border);border-radius:8px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.content{padding:0 20px 20px}
+.brand-group{margin-bottom:12px}
+.brand-header{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;transition:.3s}
+.brand-header:hover{border-color:var(--primary)}
+.brand-header .count{font-size:11px;color:var(--muted);font-weight:400}
+.brand-items{display:none;padding:4px 0}
+.brand-items.open{display:block}
+.product-item{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:6px;margin-bottom:4px;cursor:pointer;transition:.3s}
+.product-item:hover{border-color:var(--primary);background:rgba(108,92,231,.05)}
+.product-item .info{flex:1}
+.product-item .sku{font-family:monospace;color:var(--info);font-size:11px}
+.product-item .name{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:300px}
+.product-item .price{font-weight:600;color:var(--success);white-space:nowrap}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;align-items:center;justify-content:center}
+.modal-overlay.active{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:24px;width:90%;max-width:420px}
+.modal h3{font-size:16px;margin-bottom:16px}
+.modal .close{float:right;cursor:pointer;font-size:20px;background:none;border:none;color:var(--muted)}
+.btn{width:100%;padding:12px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:.3s;font-family:inherit;margin-top:8px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-primary{background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:#fff}
+.btn-success{background:linear-gradient(135deg,var(--success),#00A884);color:#fff}
+.form-group{margin-bottom:12px}.form-group label{display:block;font-size:11px;color:var(--muted);margin-bottom:4px}
+.form-group input{width:100%;padding:8px 12px;background:var(--input);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-size:13px;outline:none;font-family:inherit}
+.toast-container{position:fixed;top:15px;right:15px;z-index:9999;display:flex;flex-direction:column;gap:8px;max-width:350px}
+.toast{padding:12px 16px;border-radius:8px;display:flex;align-items:center;gap:10px;animation:fadeIn .3s ease;box-shadow:0 8px 25px rgba(0,0,0,.4);font-size:13px}
+.toast.success{background:rgba(0,184,148,.95);color:#fff}.toast.error{background:rgba(225,112,85,.95);color:#fff}.toast.info{background:rgba(116,185,255,.95);color:#fff}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+.placeholder{text-align:center;padding:30px;color:var(--muted)}
+.product-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.product-grid .product-item{flex-direction:column;align-items:flex-start;text-align:left;padding:10px}
+@media(max-width:768px){.product-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.product-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="topbar">
+<div class="logo">⚡ SATUSAKU CORP.</div>
+<div class="user-actions">
+<span class="balance" id="userBalance">💰 Rp 0</span>
+<a href="/login.html" id="loginLink" class="btn btn-outline btn-sm" style="text-decoration:none;padding:6px 12px;background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:6px;font-size:12px">Login / Daftar</a>
+</div>
+</div>
+<div class="search-box"><input type="text" id="searchInput" placeholder="🔍 Cari produk game..." oninput="filterProducts()" /></div>
+<div class="content" id="productsList"><div class="placeholder">Memuat produk...</div></div>
+<!-- ORDER MODAL -->
+<div class="modal-overlay" id="orderModal">
+<div class="modal">
+<button class="close" onclick="closeModal()">✕</button>
+<h3 id="modalTitle">Order Produk</h3>
+<div id="modalProduct"></div>
+<div id="loginPrompt" style="display:none">
+<p style="font-size:12px;color:var(--muted);margin-bottom:12px">Silakan login atau daftar terlebih dahulu untuk melakukan order.</p>
+<a href="/login.html" class="btn btn-primary" style="text-decoration:none;text-align:center;display:block">🔑 Login / Daftar</a>
+</div>
+<div id="orderForm" style="display:none">
+<div class="form-group"><label>ID Game</label><input type="text" id="orderCustomerId" placeholder="123456789" /></div>
+<div class="form-group"><label>Server <small>(opsional)</small></label><input type="text" id="orderServer" placeholder="1234" /></div>
+<div class="form-group"><label>Ref ID</label><input type="text" id="orderRefId" placeholder="Auto-generated" readonly /></div>
+<button class="btn btn-success" onclick="submitOrder()" id="orderBtn">🚀 Order Sekarang</button>
+</div>
+</div>
+</div>
+<div class="toast-container" id="toastContainer"></div>
+<script>
+const API=window.location.origin+'/api';
+let allProducts=[];
+let selectedProduct=null;
+const token=localStorage.getItem('token');
+const user=JSON.parse(localStorage.getItem('user')||'null');
+function showToast(m,t='info'){const c=document.getElementById('toastContainer');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>d.remove(),4000);}
+function formatRp(n){return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(n||0);}
+function genRef(){const n=new Date();return `SK-${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}${String(n.getSeconds()).padStart(2,'0')}-${Math.floor(Math.random()*1000)}`;}
+if(token&&user){
+document.getElementById('loginLink').textContent='Dashboard';
+document.getElementById('loginLink').href=user.role==='admin'?'/admin.html':'/dashboard.html';
+document.getElementById('userBalance').textContent='💰 '+formatRp(user.balance);
+document.getElementById('userBalance').style.display='inline-block';
+}
+async function loadProducts(){
+try{const r=await fetch(API+'/shop/products');const d=await r.json();
+if(!d.success){document.getElementById('productsList').innerHTML='<div class="placeholder">Gagal memuat produk</div>';return;}
+allProducts=d.products;
+if(d.groups.length){
+let html='';let gi=0;
+d.groups.forEach(([brand,items])=>{
+html+=`<div class="brand-group"><div class="brand-header" onclick="toggleBrand(${gi})"><span>${brand} <span class="count">(${items.length})</span></span><span class="arrow" id="arrow-${gi}">▶</span></div><div class="brand-items" id="brand-${gi}">`;
+items.forEach(p=>{
+html+=`<div class="product-item" onclick='orderProduct(${JSON.stringify(p).replace(/'/g,"\\'")})'>
+<div class="info"><div class="sku">${p.buyer_sku_code}</div><div class="name">${(p.product_name||'').substring(0,40)}</div></div>
+<div class="price">${formatRp(p.price_sell)}</div></div>`;
+});
+html+=`</div></div>`;gi++;
+});
+html+=`<p style="text-align:center;color:var(--muted);font-size:11px;margin-top:12px">${d.total} produk tersedia</p>`;
+document.getElementById('productsList').innerHTML=html;
+// Open first brand by default
+setTimeout(()=>{const first=document.querySelector('.brand-items');if(first){first.classList.add('open');const a=document.querySelector('.arrow');if(a)a.classList.add('open');}},100);
+}else{document.getElementById('productsList').innerHTML='<div class="placeholder">Belum ada produk</div>';}
+}catch(e){document.getElementById('productsList').innerHTML='<div class="placeholder">Error: '+e.message+'</div>';}
+}
+function filterProducts(){
+const s=document.getElementById('searchInput').value.toLowerCase().trim();
+document.querySelectorAll('.product-item').forEach(el=>{
+const text=el.textContent.toLowerCase();
+el.style.display=text.includes(s)?'':'none';
+});
+}
+function toggleBrand(i){
+const el=document.getElementById('brand-'+i);
+const arrow=document.getElementById('arrow-'+i);
+if(el.classList.contains('open')){el.classList.remove('open');arrow.classList.remove('open');}
+else{el.classList.add('open');arrow.classList.add('open');}
+}
+function orderProduct(p){
+selectedProduct=p;
+document.getElementById('modalTitle').textContent=p.product_name||p.buyer_sku_code;
+document.getElementById('modalProduct').innerHTML=`
+<div style="margin-bottom:12px"><div style="font-family:monospace;color:var(--info);font-size:12px">${p.buyer_sku_code}</div><div style="font-size:12px;color:var(--muted)">${(p.product_name||'').substring(0,60)}</div>
+<div style="font-size:18px;font-weight:700;color:var(--success);margin-top:8px">${formatRp(p.price_sell)}</div></div>`;
+if(token&&user){
+document.getElementById('loginPrompt').style.display='none';
+document.getElementById('orderForm').style.display='block';
+document.getElementById('orderRefId').value=genRef();
+}else{
+document.getElementById('loginPrompt').style.display='block';
+document.getElementById('orderForm').style.display='none';
+}
+document.getElementById('orderModal').classList.add('active');
+}
+function closeModal(){document.getElementById('orderModal').classList.remove('active');}
+async function submitOrder(){
+const custId=document.getElementById('orderCustomerId').value.trim();
+const server=document.getElementById('orderServer').value.trim();
+const ref=document.getElementById('orderRefId').value.trim();
+if(!custId){showToast('ID Game wajib!','error');return;}
+const customer_no=server?`${custId}.${server}`:custId;
+document.getElementById('orderBtn').disabled=true;
+try{const r=await fetch(API+'/shop/order',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+body:JSON.stringify({buyer_sku_code:selectedProduct.buyer_sku_code,customer_no,ref_id:ref,token})});
+const d=await r.json();
+if(d.success){showToast(d.message,'success');closeModal();
+if(user){user.balance=(user.balance||0)-selectedProduct.price_sell;
+document.getElementById('userBalance').textContent='💰 '+formatRp(user.balance);}
+}else{showToast(d.message,'error');}
+}catch(e){showToast('Error: '+e.message,'error');}
+finally{document.getElementById('orderBtn').disabled=false;}
+}
+loadProducts();
+</script>
+</body>
+</html>

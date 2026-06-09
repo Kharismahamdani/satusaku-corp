@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SATUSAKU CORP.</title>
+    <style>
+        :root {
+            --primary: #6C5CE7; --primary-dark: #5A4BD1; --secondary: #00CEC9;
+            --success: #00B894; --warning: #FDCB6E; --danger: #E17055; --info: #74B9FF;
+            --bg: #0A0A1A; --card-bg: #1A1A2E; --card-border: #2D2D44;
+            --text: #FFFFFF; --text-muted: #B2BEC3;
+            --input-bg: #252542; --input-border: #3D3D5C;
+            --radius: 12px; --transition: all 0.3s ease;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; }
+        ::-webkit-scrollbar { width:5px; }
+        ::-webkit-scrollbar-track { background:var(--bg); }
+        ::-webkit-scrollbar-thumb { background:var(--card-border); border-radius:3px; }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(15px)} to{opacity:1;transform:translateY(0)} }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .fade-in { animation:fadeIn .4s ease }
+        .app { display:grid; grid-template-columns:260px 1fr 220px; min-height:100vh; gap:0; }
+        @media(max-width:1200px) { .app { grid-template-columns:260px 1fr; } }
+        @media(max-width:768px) { .app { grid-template-columns:1fr; } }
+        .sidebar-left { background:var(--card-bg); border-right:1px solid var(--card-border); padding:16px; overflow-y:auto; }
+        .sidebar-left .logo { font-size:20px; font-weight:700; background:linear-gradient(135deg,var(--primary),var(--secondary)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:16px; }
+        .sidebar-left .section-title { font-size:10px; text-transform:uppercase; letter-spacing:1px; color:var(--gray,#636E72); margin:14px 0 8px; }
+        .form-group { margin-bottom:12px; }
+        .form-group label { display:block; font-size:11px; font-weight:500; color:var(--text-muted); margin-bottom:4px; }
+        .form-group input, .form-group select { width:100%; padding:8px 12px; background:var(--input-bg); border:1px solid var(--input-border); border-radius:6px; color:var(--text); font-size:13px; outline:none; font-family:inherit; }
+        .form-group input:focus { border-color:var(--primary); }
+        .btn { display:inline-flex; align-items:center; justify-content:center; gap:6px; padding:8px 16px; border:none; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer; transition:var(--transition); font-family:inherit; }
+        .btn:active { transform:scale(.97) }
+        .btn:disabled { opacity:.5; cursor:not-allowed }
+        .btn-primary { background:linear-gradient(135deg,var(--primary),var(--primary-dark)); color:white; width:100%; }
+        .btn-primary:hover:not(:disabled) { box-shadow:0 4px 15px rgba(108,92,231,.3) }
+        .btn-success { background:linear-gradient(135deg,var(--success),#00A884); color:white; }
+        .btn-danger { background:linear-gradient(135deg,var(--danger),#D63031); color:white; }
+        .btn-info { background:linear-gradient(135deg,var(--info),#5DADE2); color:white; }
+        .btn-warning { background:linear-gradient(135deg,var(--warning),#F39C12); color:var(--dark,#2D3436); }
+        .btn-outline { background:transparent; border:1px solid var(--card-border); color:var(--text); }
+        .btn-outline:hover { border-color:var(--primary); color:var(--primary); }
+        .btn-sm { padding:6px 12px; font-size:12px; }
+        .btn-xs { padding:4px 10px; font-size:11px; }
+        .btn .spinner { width:14px; height:14px; border:2px solid rgba(255,255,255,.3); border-top-color:white; border-radius:50%; animation:spin .6s linear infinite; display:inline-block; }
+        .toggle-wrapper { display:flex; align-items:center; gap:8px; }
+        .toggle { position:relative; width:40px; height:22px; cursor:pointer; }
+        .toggle input { display:none; }
+        .toggle .slider { position:absolute; inset:0; background:var(--input-bg); border:1px solid var(--input-border); border-radius:11px; transition:var(--transition); }
+        .toggle .slider::before { content:''; position:absolute; width:16px; height:16px; left:2px; top:2px; background:var(--text); border-radius:50%; transition:var(--transition); }
+        .toggle input:checked+.slider { background:var(--secondary); border-color:var(--secondary); }
+        .toggle input:checked+.slider::before { transform:translateX(18px); }
+        .toggle-label { font-size:11px; color:var(--text-muted); }
+        .config-summary { background:var(--input-bg); border-radius:6px; padding:10px; margin-top:10px; font-size:12px; }
+        .config-summary .item { display:flex; justify-content:space-between; padding:2px 0; }
+        .config-summary .item .lbl { color:var(--text-muted); }
+        .config-summary .item .val { font-weight:500; }
+        .quick-actions { display:grid; grid-template-columns:1fr 1fr; gap:6px; }
+        .qa-btn { padding:10px; background:var(--input-bg); border:1px solid var(--card-border); border-radius:8px; text-align:center; cursor:pointer; transition:var(--transition); color:var(--text); }
+        .qa-btn:hover { border-color:var(--primary); background:rgba(108,92,231,.1); }
+        .qa-btn .icon { font-size:18px; }
+        .qa-btn .label { font-size:11px; margin-top:2px; }
+        .main { padding:16px; overflow-y:auto; }
+        .tabs { display:flex; gap:4px; background:var(--input-bg); border-radius:8px; padding:3px; margin-bottom:16px; overflow-x:auto; }
+        .tab { padding:7px 14px; border:none; background:transparent; color:var(--text-muted); font-size:13px; font-weight:500; cursor:pointer; border-radius:6px; transition:var(--transition); white-space:nowrap; font-family:inherit; }
+        .tab:hover { color:var(--text); background:rgba(255,255,255,.05); }
+        .tab.active { color:white; background:var(--primary); }
+        .tab-content { display:none; }
+        .tab-content.active { display:block; animation:fadeIn .3s ease; }
+        .card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius); padding:20px; margin-bottom:16px; }
+        .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+        .card-title { font-size:16px; font-weight:600; display:flex; align-items:center; gap:8px; }
+        .response-viewer { background:#0D0D1A; border:1px solid var(--card-border); border-radius:6px; overflow:hidden; font-family:'Consolas',monospace; font-size:12px; margin-top:12px; }
+        .response-viewer .hdr { display:flex; justify-content:space-between; padding:8px 14px; background:rgba(255,255,255,.02); border-bottom:1px solid var(--card-border); font-size:12px; }
+        .response-viewer .hdr .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+        .response-viewer .hdr .dot.green { background:var(--success); }
+        .response-viewer .hdr .dot.red { background:var(--danger); }
+        .response-viewer .hdr .dot.yellow { background:var(--warning); }
+        .response-viewer .body { padding:12px 14px; max-height:350px; overflow:auto; white-space:pre-wrap; word-break:break-all; color:var(--text-muted); line-height:1.4; }
+        .json-key { color:var(--info); }
+        .json-string { color:var(--success); }
+        .json-number { color:var(--warning); }
+        .json-boolean { color:var(--danger); }
+        .json-null { color:var(--gray,#636E72); }
+        .placeholder { text-align:center; padding:30px; color:var(--gray,#636E72); font-size:13px; }
+        .placeholder .icon { font-size:36px; margin-bottom:10px; opacity:.5; }
+        .toast-container { position:fixed; top:15px; right:15px; z-index:9999; display:flex; flex-direction:column; gap:8px; max-width:350px; }
+        .toast { padding:12px 16px; border-radius:8px; display:flex; align-items:center; gap:10px; animation:fadeIn .3s ease; box-shadow:0 8px 25px rgba(0,0,0,.4); font-size:13px; }
+        .toast.success { background:rgba(0,184,148,.95); color:white; }
+        .toast.error { background:rgba(225,112,85,.95); color:white; }
+        .toast.info { background:rgba(116,185,255,.95); color:white; }
+        .toast.warning { background:rgba(253,203,110,.95); color:var(--dark,#2D3436); }
+        .toast .close { cursor:pointer; opacity:.7; background:none; border:none; color:inherit; font-size:16px; }
+        .brand-group { margin-bottom:8px; }
+        .brand-header { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; background:var(--input-bg); border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; transition:var(--transition); }
+        .brand-header:hover { background:rgba(108,92,231,.1); }
+        .brand-header .count { font-size:11px; color:var(--text-muted); font-weight:400; }
+        .brand-header .arrow { transition:transform .2s; }
+        .brand-header .arrow.open { transform:rotate(90deg); }
+        .brand-items { display:none; padding:4px 0; }
+        .brand-items.open { display:block; }
+        .brand-item { display:grid; grid-template-columns:1fr auto auto auto; gap:8px; padding:6px 12px; font-size:12px; cursor:pointer; border-radius:4px; transition:var(--transition); border-bottom:1px solid rgba(255,255,255,.02); }
+        .brand-item:hover { background:rgba(108,92,231,.08); }
+        .brand-item .code { font-family:monospace; color:var(--info); font-size:11px; }
+        .brand-item .price { color:var(--text-muted); font-family:monospace; text-decoration:line-through; font-size:11px; }
+        .brand-item .sell { color:var(--success); font-family:monospace; font-weight:600; }
+        .brand-item .stock-badge { font-size:10px; padding:2px 6px; border-radius:10px; display:inline-flex; align-items:center; font-weight:600; }
+        .stock-badge.ready { background:rgba(0,184,148,.15); color:var(--success); }
+        .stock-badge.low { background:rgba(253,203,110,.15); color:var(--warning); }
+        .stock-badge.empty { background:rgba(225,112,85,.15); color:var(--danger); }
+        .stock-badge.unlimited { background:rgba(116,185,255,.15); color:var(--info); }
+        .search-box { position:relative; }
+        .search-box input { padding-left:30px; }
+        .search-box .search-icon { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:var(--gray,#636E72); font-size:14px; }
+        .sidebar-right { background:var(--card-bg); border-left:1px solid var(--card-border); padding:12px; overflow-y:auto; display:flex; flex-direction:column; }
+        @media(max-width:1200px) { .sidebar-right { display:none; } }
+        .sidebar-right .title { font-size:12px; font-weight:600; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center; }
+        .sidebar-right .log-list { flex:1; overflow-y:auto; font-size:11px; font-family:'Consolas',monospace; }
+        .sidebar-right .log-item { padding:4px 0; border-bottom:1px solid rgba(255,255,255,.03); }
+        .sidebar-right .log-item .time { color:var(--gray,#636E72); }
+        .sidebar-right .log-item .status { font-weight:600; }
+        .sidebar-right .log-item .status.success { color:var(--success); }
+        .sidebar-right .log-item .status.error { color:var(--danger); }
+        .sidebar-right .log-item .status.pending { color:var(--warning); }
+        .sidebar-right .log-item .status.info { color:var(--info); }
+        .sidebar-right .log-item .msg { color:var(--text-muted); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .info-box { padding:10px 14px; border-radius:6px; font-size:12px; line-height:1.5; margin:10px 0; }
+        .info-box.warning { background:rgba(253,203,110,.1); border:1px solid rgba(253,203,110,.2); color:var(--warning); }
+        .info-box.info { background:rgba(116,185,255,.1); border:1px solid rgba(116,185,255,.2); color:var(--info); }
+        .info-box.error { background:rgba(225,112,85,.1); border:1px solid rgba(225,112,85,.2); color:var(--danger); }
+        .info-box.success { background:rgba(0,184,148,.1); border:1px solid rgba(0,184,148,.2); color:var(--success); }
+        .cutoff-indicator { padding:8px 12px; border-radius:6px; font-size:12px; margin:8px 0; display:flex; align-items:center; gap:8px; }
+        .cutoff-indicator.open { background:rgba(0,184,148,.1); border:1px solid rgba(0,184,148,.2); color:var(--success); }
+        .cutoff-indicator.closed { background:rgba(225,112,85,.1); border:1px solid rgba(225,112,85,.2); color:var(--danger); }
+        .cutoff-indicator.unknown { background:rgba(253,203,110,.1); border:1px solid rgba(253,203,110,.2); color:var(--warning); }
+        .margin-input-group { display:flex; gap:8px; align-items:center; }
+        .margin-input-group input { width:70px; }
+        .error-detail { background:rgba(225,112,85,.05); border:1px solid rgba(225,112,85,.15); border-radius:6px; padding:10px; margin:8px 0; font-size:12px; }
+        .error-detail .rc-code { font-family:monospace; font-weight:700; color:var(--danger); font-size:16px; }
+        .error-detail .rc-msg { color:var(--text); margin:4px 0; }
+        .error-detail .rc-solusi { color:var(--text-muted); font-size:11px; }
+        .status-badge { display:inline-block; width:8px; height:8px; border-radius:50%; }
+        .status-badge.online { background:var(--success); box-shadow:0 0 6px rgba(0,184,148,.5); }
+        .status-badge.offline { background:var(--danger); }
+        .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:1000; align-items:center; justify-content:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:var(--card-bg); border:1px solid var(--card-border); border-radius:var(--radius); padding:24px; max-width:700px; width:90%; max-height:80vh; overflow-y:auto; }
+        .modal .modal-title { font-size:16px; font-weight:600; margin-bottom:12px; }
+        .modal table { width:100%; border-collapse:collapse; font-size:12px; }
+        .modal th { background:var(--input-bg); padding:6px 10px; text-align:left; font-weight:600; color:var(--text-muted); position:sticky; top:0; }
+        .modal td { padding:6px 10px; border-bottom:1px solid var(--card-border); vertical-align:top; }
+        .modal .modal-close { float:right; cursor:pointer; font-size:20px; opacity:.7; background:none; border:none; color:var(--text); }
+        .status-chip { display:inline-block; padding:1px 6px; border-radius:8px; font-size:10px; font-weight:600; }
+        .status-chip.success { background:rgba(0,184,148,.2); color:var(--success); }
+        .status-chip.pending { background:rgba(253,203,110,.2); color:var(--warning); }
+        .status-chip.error { background:rgba(225,112,85,.2); color:var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- RC Codes Modal -->
+    <div class="modal-overlay" id="rcModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeRcModal()">✕</button>
+            <div class="modal-title">🧾 Response Code Reference</div>
+            <div class="info-box info">Klik RC untuk detail solusi.</div>
+            <div id="rcModalContent"><p style="color:var(--text-muted);font-size:13px;">Memuat...</p></div>
+        </div>
+    </div>
+
+    <div class="app">
+        <!-- LEFT SIDEBAR - CONFIG -->
+        <aside class="sidebar-left fade-in">
+            <div class="logo">⚡ SATUSAKU CORP.</div>
+            <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+                <span>🔑 Kredensial</span>
+                <span><span class="status-badge offline" id="statusBadge"></span></span>
+            </div>
+            <div class="form-group"><label>Username</label><input type="text" id="username" placeholder="Username API" /></div>
+            <div class="form-group"><label>Dev Key <small>(testing)</small></label><input type="password" id="apiKeyDev" placeholder="Development Key" /></div>
+            <div class="form-group"><label>Prod Key <small>(live)</small></label><input type="password" id="apiKeyProd" placeholder="Production Key" /></div>
+            <div class="form-group">
+                <div class="toggle-wrapper">
+                    <label class="toggle"><input type="checkbox" id="isDevelopment" checked /><span class="slider"></span></label>
+                    <span class="toggle-label" id="modeLabel">🧪 Mode Dev</span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Margin (%)</label>
+                <div class="margin-input-group">
+                    <input type="number" id="marginPercent" value="0" min="0" max="100" />
+                    <button class="btn btn-outline btn-xs" onclick="document.getElementById('marginPercent').value='0'">Reset</button>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="saveConfig()" id="saveConfigBtn">💾 Simpan</button>
+            <div class="config-summary" id="configSummary" style="display:none;">
+                <div class="item"><span class="lbl">User</span><span class="val" id="summaryUsername">-</span></div>
+                <div class="item"><span class="lbl">Mode</span><span class="val" id="summaryMode">Dev</span></div>
+                <div class="item"><span class="lbl">Active Key</span><span class="val" id="summaryActiveKey">-</span></div>
+                <div class="item"><span class="lbl">Margin</span><span class="val" id="summaryMargin">0%</span></div>
+            </div>
+            <div class="section-title">⚡ Quick</div>
+            <div class="quick-actions">
+                <div class="qa-btn" onclick="cekSaldo()"><div class="icon">💰</div><div class="label">Saldo</div></div>
+                <div class="qa-btn" onclick="showTab('deposit')"><div class="icon">🏦</div><div class="label">Deposit</div></div>
+                <div class="qa-btn" onclick="showTab('pricelist')"><div class="icon">📋</div><div class="label">Harga</div></div>
+                <div class="qa-btn" onclick="showTab('prepaid')"><div class="icon">🚀</div><div class="label">Topup</div></div>
+                <div class="qa-btn" onclick="showTab('cekstatus')"><div class="icon">🔍</div><div class="label">Status</div></div>
+                <div class="qa-btn" onclick="openRcModal()"><div class="icon">🧾</div><div class="label">RC Info</div></div>
+                <div class="qa-btn" onclick="debugSign()"><div class="icon">⚡</div><div class="label">Debug</div></div>
+                <div class="qa-btn" onclick="clearCache()"><div class="icon">🗑️</div><div class="label">Refresh</div></div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main fade-in">
+            <div class="tabs">
+                <button class="tab active" data-tab="dashboard" onclick="showTab('dashboard')">🏠 Home</button>
+                <button class="tab" data-tab="saldo" onclick="showTab('saldo')">💰 Saldo</button>
+                <button class="tab" data-tab="pricelist" onclick="showTab('pricelist')">📋 Harga</button>
+                <button class="tab" data-tab="prepaid" onclick="showTab('prepaid')">🚀 Topup</button>
+                <button class="tab" data-tab="deposit" onclick="showTab('deposit')">🏦 Deposit</button>
+                <button class="tab" data-tab="cekstatus" onclick="showTab('cekstatus')">🔍 Status</button>
+            </div>
+
+            <!-- HOME -->
+            <div class="tab-content active" id="tab-dashboard">
+                <div class="card">
+                    <div class="card-header"><div class="card-title">👋 Selamat Datang</div></div>
+                    <p style="color:var(--text-muted);font-size:13px;line-height:1.7;">SATUSAKU CORP. v3.0 — dengan cache lokal 15 menit, margin otomatis, indikator stok, dan detil error.</p>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0;">
+                        <div style="background:var(--input-bg);border-radius:8px;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">1️⃣</div><strong style="font-size:13px;">Isi Konfigurasi</strong><div style="font-size:11px;color:var(--text-muted);">Username + Key + Margin</div></div>
+                        <div style="background:var(--input-bg);border-radius:8px;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">2️⃣</div><strong style="font-size:13px;">Cek Harga</strong><div style="font-size:11px;color:var(--text-muted);">Cache lokal, harga modal + jual</div></div>
+                        <div style="background:var(--input-bg);border-radius:8px;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">3️⃣</div><strong style="font-size:13px;">Topup / Inquiry</strong><div style="font-size:11px;color:var(--text-muted);">+ detil error & solusi</div></div>
+                        <div style="background:var(--input-bg);border-radius:8px;padding:12px;"><div style="font-size:20px;margin-bottom:4px;">4️⃣</div><strong style="font-size:13px;">Log Real-time</strong><div style="font-size:11px;color:var(--text-muted);">Sidebar kanan</div></div>
+                    </div>
+                    <div id="cacheInfo" style="background:var(--input-bg);border-radius:6px;padding:10px;font-size:12px;margin:8px 0;">
+                        <div style="display:flex;justify-content:space-between;"><span>Caching:</span><span id="cacheStatus">Cek...</span></div>
+                        <div id="cacheDetail" style="color:var(--text-muted);font-size:11px;margin-top:4px;"></div>
+                    </div>
+                    <div class="info-box info"><strong>ℹ️ Info:</strong> Klik 🧾 RC Info di sidebar untuk response code + solusi.</div>
+                </div>
+            </div>
+
+            <!-- SALDO -->
+            <div class="tab-content" id="tab-saldo">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">💰 Cek Saldo</div>
+                        <button class="btn btn-success btn-sm" onclick="cekSaldo()">🔄 Cek Saldo</button>
+                    </div>
+                    <div id="saldoResponse"><div class="placeholder"><div class="icon">💳</div><p>Klik "Cek Saldo"</p></div></div>
+                </div>
+            </div>
+
+            <!-- PRICE LIST -->
+            <div class="tab-content" id="tab-pricelist">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title">📋 Daftar Harga</div>
+                        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                            <button class="btn btn-primary btn-sm" onclick="loadPriceList()">🔍 Cari</button>
+                            <button class="btn btn-outline btn-sm" onclick="refreshPriceList()">🔄 Refresh</button>
+                        </div>
+                    </div>
+                    <div class="search-box form-group">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" id="priceSearch" placeholder="Cari kode/nama produk..." onkeypress="if(event.key==='Enter')loadPriceList()" />
+                    </div>
+                    <div id="pricelistResponse"><div class="placeholder"><div class="icon">📦</div><p>Klik "Cari" untuk harga, "Refresh" untuk update dari API.</p></div></div>
+                </div>
+            </div>
+
+            <!-- PREPAID -->
+            <div class="tab-content" id="tab-prepaid">
+                <div class="card">
+                    <div class="card-header"><div class="card-title">🚀 Topup (Prepaid)</div></div>
+                    <div class="info-box info"><strong>Prepaid:</strong> Pulsa, Data, PLN Token, E-Money, Voucher Game.</div>
+                    <div id="cutoffPrepaid" class="cutoff-indicator unknown">⏰ Cek jam operasional...</div>
+                    <div class="form-group"><label>Kode Produk</label><input type="text" id="transSku" placeholder="Contoh: pre32031064 (Mobile Legends)" /></div>
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">
+                        <div class="form-group"><label>ID Game</label><input type="text" id="transCustomerId" placeholder="123456789" /></div>
+                        <div class="form-group"><label>Server <small>(opsional)</small></label><input type="text" id="transCustomerServer" placeholder="1234" /></div>
+                    </div>
+                    <div class="form-group"><label>Ref ID</label><div style="display:flex;gap:6px;"><input type="text" id="transRefId" placeholder="INV-001" style="flex:1;" /><button class="btn btn-outline btn-sm" onclick="generateRefId('transRefId')">🎲</button></div></div>
+                    <div class="form-group"><div class="toggle-wrapper"><label class="toggle"><input type="checkbox" id="transTesting" checked /><span class="slider"></span></label><span class="toggle-label">Testing</span></div></div>
+                    <div style="display:flex;gap:8px;"><button class="btn btn-success" onclick="doTransaction()" id="transBtn">🚀 Topup</button><button class="btn btn-outline btn-sm" onclick="showTab('pricelist')">📋 Cari</button><button class="btn btn-warning btn-sm" onclick="refreshStatus()" title="Cek status transaksi terakhir">🔄 Status</button></div>
+                    <div style="background:var(--input-bg);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text-muted);margin-top:8px;">💡 Contoh: Mobile Legends → ID: <b>123456789</b>, Server: <b>1234</b>. Untuk game tanpa server, cukup isi ID saja.</div>
+                    <div id="transactionResponse" style="margin-top:12px;"><div class="placeholder"><div class="icon">📤</div><p>Isi form dan klik Topup.</p></div></div>
+                </div>
+            </div>
+
+            <!-- DEPOSIT -->
+            <div class="tab-content" id="tab-deposit">
+                <div class="card">
+                    <div class="card-header"><div class="card-title">🏦 Deposit Saldo</div></div>
+                    <div class="info-box info"><strong>Deposit:</strong> Isi saldo akun Anda melalui transfer bank. Setelah request, lakukan transfer sesuai nominal + kode unik yang tertera.</div>
+                    <div class="form-group"><label>Nominal Deposit (Rp)</label><input type="number" id="depositAmount" placeholder="100000" min="10000" /></div>
+                    <div class="form-group"><label>Bank Tujuan</label><select id="depositBank" style="width:100%;padding:8px 12px;background:var(--input-bg);border:1px solid var(--input-border);border-radius:6px;color:var(--text);font-size:13px;">
+                        <option value="">-- Pilih Bank --</option>
+                        <optgroup label="Perorangan">
+                            <option value="Flip">Flip</option>
+                            <option value="ShopeePay">ShopeePay</option>
+                        </optgroup>
+                        <optgroup label="Perusahaan">
+                            <option value="BCA">BCA</option>
+                            <option value="MANDIRI">MANDIRI</option>
+                            <option value="BRI">BRI</option>
+                            <option value="BNI">BNI</option>
+                        </optgroup>
+                    </select></div>
+                    <div class="form-group"><label>Nama Pemilik Rekening Pengirim</label><input type="text" id="depositOwnerName" placeholder="John Doe" /></div>
+                    <button class="btn btn-success" onclick="requestDeposit()" id="depositBtn">🏦 Request Deposit</button>
+                    <div id="depositResponse" style="margin-top:12px;"><div class="placeholder"><div class="icon">🏦</div><p>Isi form di atas, lalu klik "Request Deposit" untuk mendapatkan detail transfer.</p></div></div>
+                </div>
+            </div>
+
+            <!-- CEK STATUS -->
+            <div class="tab-content" id="tab-cekstatus">
+                <div class="card">
+                    <div class="card-header"><div class="card-title">🔍 Cek Status</div></div>
+                    <div class="info-box warning"><strong>⚠️</strong> Jangan cek transaksi >90 hari — bisa trigger transaksi baru untuk prepaid!</div>
+                    <div class="form-group"><label>Ref ID</label><input type="text" id="statusRefId" placeholder="Ref ID dari transaksi awal" /></div>
+                    <div class="form-group"><label>Kode Produk (SKU)</label><input type="text" id="statusSku" placeholder="Sama seperti saat topup" /></div>
+                    <div style="display:grid;grid-template-columns:2fr 1fr;gap:12px;">
+                        <div class="form-group"><label>ID Game</label><input type="text" id="statusCustomerId" placeholder="Sama seperti saat topup" /></div>
+                        <div class="form-group"><label>Server <small>(opsional)</small></label><input type="text" id="statusCustomerServer" placeholder="1234" /></div>
+                    </div>
+                    <div class="form-group"><label>Tipe</label><select id="statusType" style="width:100%;background:var(--input-bg);border:1px solid var(--input-border);color:var(--text);padding:8px;border-radius:6px;"><option value="prepaid">Prepaid</option><option value="postpaid">Pascabayar</option></select></div>
+                    <button class="btn btn-warning" onclick="cekStatus()">🔍 Cek Status</button>
+                    <div style="background:var(--input-bg);border-radius:6px;padding:8px 12px;font-size:11px;color:var(--text-muted);margin-top:8px;">💡 Isi dengan data yang sama persis saat melakukan topup/transaction.</div>
+                    <div id="statusResponse" style="margin-top:12px;"><div class="placeholder"><div class="icon">🔍</div><p>Isi data transaksi lalu klik "Cek Status".</p></div></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- RIGHT SIDEBAR - LOG -->
+        <aside class="sidebar-right fade-in">
+            <div class="title">📜 Live Log <button class="btn btn-outline btn-xs" onclick="clearLogs()">🗑️</button></div>
+            <div class="log-list" id="logSidebar"><div style="color:var(--gray,#636E72);font-size:11px;text-align:center;padding:20px;">Belum ada log.</div></div>
+        </aside>
+    </div>
+
+    <script>
+        const state = { username:'', apiKey:'', isDevelopment:true, logs:[], margin:0, cutoff:{}, lastTx:null, pollInterval:null, pollCount:0 };
+
+        function showToast(msg,type='info',dur=4000) {
+            const c=document.getElementById('toastContainer');
+            const icons={success:'✅',error:'❌',info:'ℹ️',warning:'⚠️'};
+            const t=document.createElement('div'); t.className=`toast ${type}`;
+            t.innerHTML=`<span>${icons[type]||'ℹ️'}</span><span style="flex:1">${msg}</span><button class="close" onclick="this.parentElement.remove()">✕</button>`;
+            c.appendChild(t);
+            setTimeout(()=>{if(t.parentElement){t.style.opacity='0';t.style.transform='translateX(100px)';t.style.transition='all .3s';setTimeout(()=>t.remove(),300);}},dur);
+        }
+
+        document.addEventListener('DOMContentLoaded',()=>{
+            loadConfig();
+            checkCutOff();
+            setInterval(checkCutOff,60000);
+            setInterval(loadCacheInfo,30000);
+            document.getElementById('isDevelopment').addEventListener('change',()=>{
+                const d=document.getElementById('isDevelopment').checked;
+                document.getElementById('modeLabel').textContent=d?'🧪 Mode Dev':'🚀 Mode Prod';
+            });
+        });
+
+        async function loadConfig() {
+            try {
+                const r=await fetch('/api/config'); const d=await r.json();
+                if(d.success&&d.config.username) {
+                    document.getElementById('username').value=d.config.username||'';
+                    document.getElementById('summaryUsername').textContent=d.config.username||'-';
+                    document.getElementById('summaryMode').textContent=d.config.isDevelopment?'Dev':'Prod';
+                    const hd=d.config.apiKeyDev&&d.config.apiKeyDev!=='-'&&d.config.apiKeyDev!=='';
+                    const hp=d.config.apiKeyProd&&d.config.apiKeyProd!=='-'&&d.config.apiKeyProd!=='';
+                    document.getElementById('summaryActiveKey').textContent=d.config.isDevelopment?(hd?'Dev':(hp?'Prod':'N/A')):(hp?'Prod':(hd?'Dev':'N/A'));
+                    document.getElementById('summaryMargin').textContent=(d.config.margin||0)+'%';
+                    document.getElementById('marginPercent').value=d.config.margin||0;
+                    document.getElementById('configSummary').style.display='block';
+                    document.getElementById('isDevelopment').checked=d.config.isDevelopment;
+                    document.getElementById('modeLabel').textContent=d.config.isDevelopment?'🧪 Mode Dev':'🚀 Mode Prod';
+                    state.username=d.config.username; state.apiKey=(hd||hp)?'configured':''; state.isDevelopment=d.config.isDevelopment; state.margin=d.config.margin||0;
+                    document.getElementById('statusBadge').className='status-badge online';
+                    loadCacheInfo();
+                } else {
+                    document.getElementById('statusBadge').className='status-badge offline';
+                }
+            }catch(e){ document.getElementById('statusBadge').className='status-badge offline'; }
+        }
+
+        async function saveConfig() {
+            const u=document.getElementById('username').value.trim();
+            const kd=document.getElementById('apiKeyDev').value.trim();
+            const kp=document.getElementById('apiKeyProd').value.trim();
+            const d=document.getElementById('isDevelopment').checked;
+            const mg=parseInt(document.getElementById('marginPercent').value)||0;
+            if(!u||(!kd&&!kp)){showToast('Username dan minimal satu Key wajib!','error');return;}
+            const btn=document.getElementById('saveConfigBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Menyimpan...';
+            try {
+                const r=await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:u,apiKeyDev:kd||null,apiKeyProd:kp||null,isDevelopment:d,margin:mg})});
+                const data=await r.json();
+                if(data.success) {
+                    showToast('Konfigurasi disimpan ✅','success');
+                    state.username=u; state.apiKey='configured'; state.isDevelopment=d; state.margin=mg;
+                    document.getElementById('summaryUsername').textContent=u;
+                    document.getElementById('summaryMode').textContent=d?'Dev':'Prod';
+                    document.getElementById('summaryActiveKey').textContent=d?(kd?'Dev':(kp?'Prod':'N/A')):(kp?'Prod':(kd?'Dev':'N/A'));
+                    document.getElementById('summaryMargin').textContent=mg+'%';
+                    document.getElementById('configSummary').style.display='block';
+                    document.getElementById('statusBadge').className='status-badge online';
+                    if(kd) document.getElementById('apiKeyDev').type='password';
+                    if(kp) document.getElementById('apiKeyProd').type='password';
+                    loadCacheInfo();
+                } else showToast(data.message||'Gagal','error');
+            }catch(e){showToast('Error: '+e.message,'error');}
+            finally{btn.disabled=false;btn.innerHTML='💾 Simpan';}
+        }
+
+        async function loadCacheInfo() {
+            try {
+                const r=await fetch('/api/cache-info'); const d=await r.json();
+                if(d.success) {
+                    let prepaid = d.data['products.json']||{exists:false};
+                    document.getElementById('cacheStatus').innerHTML = '🟢 Mode Real-time';
+                    let detail = '';
+                    if(prepaid.exists) detail=`Terakhir sync: ${prepaid.count} produk (${Math.floor(prepaid.age/60)}m lalu)`;
+                    else detail='Data akan dimuat saat klik "Cari" di tab Harga.';
+                    document.getElementById('cacheDetail').textContent = detail;
+                }
+            }catch(e){}
+        }
+
+        function showTab(name) {
+            document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+            document.querySelector(`.tab[data-tab="${name}"]`)?.classList.add('active');
+            document.querySelectorAll('.tab-content').forEach(t=>t.classList.remove('active'));
+            document.getElementById(`tab-${name}`)?.classList.add('active');
+        }
+
+        function generateRefId(el) {
+            const n=new Date();
+            document.getElementById(el).value=`SK-${n.getFullYear()}${String(n.getMonth()+1).padStart(2,'0')}${String(n.getDate()).padStart(2,'0')}-${String(n.getHours()).padStart(2,'0')}${String(n.getMinutes()).padStart(2,'0')}${String(n.getSeconds()).padStart(2,'0')}-${Math.floor(Math.random()*1000)}`;
+        }
+
+        function formatSaldo(a) { return new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',minimumFractionDigits:0}).format(a); }
+
+        function calcSellPrice(modalPrice, marginPct) {
+            const m = marginPct || state.margin || 0;
+            return Math.round(modalPrice * (1 + m/100));
+        }
+
+        function getStockHtml(p) {
+            const unlimited = p.unlimited_stock === true || p.unlimited_stock === 1 || p.unlimited_stock === 'true';
+            const stock = parseInt(p.stock) || 0;
+            if (unlimited) return '<span class="stock-badge unlimited">∞ Unlimited</span>';
+            if (stock > 10) return '<span class="stock-badge ready">✓ Stok</span>';
+            if (stock > 0) return `<span class="stock-badge low">⚠ ${stock}</span>`;
+            return '<span class="stock-badge empty">✗ Habis</span>';
+        }
+
+        // ===================== CUT OFF CHECK =====================
+        function checkCutOff() {
+            const h = new Date().getHours();
+            const openHour = 6, closeHour = 23;
+            const isOpen = h >= openHour && h < closeHour;
+            const status = isOpen ? 'open' : 'closed';
+            const msg = isOpen ? `🟢 Jam Operasional (${String(openHour).padStart(2,'0')}:00-${String(closeHour).padStart(2,'0')}:00 WIB)` : `🔴 Cut Off (${String(closeHour).padStart(2,'0')}:00-${String(openHour).padStart(2,'0')}:00 WIB)`;
+            const el = document.getElementById('cutoffPrepaid');
+            if (el) {
+                el.className = `cutoff-indicator ${status}`;
+                el.textContent = '⏰ '+msg;
+            }
+        }
+
+        // ===================== CEK SALDO =====================
+        async function cekSaldo() {
+            showTab('saldo'); setLoading('saldoResponse','Cek Saldo...');
+            try{
+                const r=await fetch('/api/cek-saldo',{method:'POST'});const d=await r.json();
+                displayResponse('saldoResponse',d,'Cek Saldo',d.rc_info||null);
+                addLog('Cek Saldo',d.success?'success':'error',d.success?'Berhasil':'Gagal');
+                if(d.success){
+                    const s=d.data?.data||d.data;
+                    const saldoVal=s?.deposit||s?.saldo||0;
+                    showToast(`💰 ${formatSaldo(saldoVal)}`,'success');
+                } else {
+                    const rc = d.rc||'';
+                    const rcInfo = d.rc_info||{};
+                    showToast(`❌ ${rcInfo.message||d.message||'Gagal'} (RC: ${rc})`,'error');
+                }
+            }catch(e){displayResponse('saldoResponse',{success:false,error:{message:e.message}},'Cek Saldo',null);addLog('Cek Saldo','error',e.message);showToast('Error: '+e.message,'error');}
+        }
+
+        // ===================== REQUEST DEPOSIT =====================
+        async function requestDeposit() {
+            const amount=document.getElementById('depositAmount').value.trim();
+            const bank=document.getElementById('depositBank').value;
+            const ownerName=document.getElementById('depositOwnerName').value.trim();
+            if(!amount||!amount||!bank||!ownerName){showToast('Nominal, Bank, dan Nama Pemilik wajib!','error');return;}
+            const btn=document.getElementById('depositBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Memproses...';
+            setLoading('depositResponse','Mengirim request deposit...');
+            try{
+                const r=await fetch('/api/deposit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount:parseInt(amount),bank,owner_name:ownerName})});
+                const d=await r.json();
+                displayResponse('depositResponse',d,'Request Deposit',d.rc_info||null);
+                const rc=d.rc||'';
+                const rcInfo=d.rc_info||{};
+                if(d.success&&rc==='00'){
+                    const data=d.data?.data||d.data||{};
+                    let infoMsg=`🏦 Deposit request berhasil! Transfer ke ${data.bank||'-'}, ${data.payment_method||''}. Nominal: ${formatSaldo(data.amount||0)}`;
+                    if(data.notes) infoMsg+=` | Notes: ${data.notes}`;
+                    showToast(infoMsg,'success',10000);
+                    addLog('Deposit','success',`${formatSaldo(amount)} via ${bank}`);
+                } else {
+                    showToast(`❌ ${rcInfo.message||d.message||'Gagal'} (RC: ${rc})`,'error');
+                    addLog('Deposit','error',`Gagal (${rc})`);
+                }
+            }catch(e){displayResponse('depositResponse',{success:false,error:{message:e.message}},'Request Deposit',null);showToast('Error: '+e.message,'error');addLog('Deposit','error',e.message);}
+            finally{btn.disabled=false;btn.innerHTML='🏦 Request Deposit';}
+        }
+
+        // ===================== PRICE LIST =====================
+        async function loadPriceList() {
+            showTab('pricelist');
+            const code=document.getElementById('priceSearch').value.trim();
+            setLoading('pricelistResponse','Memuat harga...');
+            try {
+                const r=await fetch('/api/price-list',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({code})});
+                const d=await r.json();
+                if(d.success&&d.groups&&d.groups.length) {
+                    const mg = d.margin !== undefined ? d.margin : state.margin;
+                    let html=`<div class="response-viewer"><div class="hdr"><span>📋 ${d.total} produk · ${d.totalGames||0} game${d.fromCache?' · 📦Cache':' · 📡Live'}</span>
+                        <span style="display:flex;gap:6px;">
+                            <span style="font-size:11px;color:var(--text-muted);margin-right:6px;">Modal → <span style="color:var(--success);font-weight:600;">Jual (${mg}%)</span></span>
+                            <button class="btn btn-outline btn-xs" onclick="expandAll()">🔽 Semua</button>
+                        </span>
+                    </div>`;
+                    d.groups.forEach(([brand,items],gi)=>{
+                        const okCount=items.filter(p=>p.buyer_product_status===true||p.buyer_product_status===1).length;
+                        html+=`<div class="brand-group">
+                            <div class="brand-header" onclick="toggleBrand(${gi})">
+                                <span>${brand} <span class="count">(${items.length} item, ${okCount} ready)</span></span>
+                                <span><span class="arrow" id="arrow-${gi}">▶</span></span>
+                            </div>
+                            <div class="brand-items" id="brand-${gi}">`;
+                        items.forEach(p=>{
+                            const ok=p.buyer_product_status===true||p.buyer_product_status===1;
+                            const desc = (p.product_name||p.product_description||'-').substring(0,60);
+                            const priceModal = p.price||0;
+                            const priceSell = calcSellPrice(priceModal, mg);
+                            const stockHtml = getStockHtml(p);
+                            const onclick=`document.getElementById('transSku').value='${p.buyer_sku_code}';showTab('prepaid');showToast('SKU: ${p.buyer_sku_code}','info');`;
+                            html+=`<div class="brand-item" onclick="${onclick}" title="${desc} (${p.buyer_sku_code}) - Klik pakai">
+                                <span style="display:flex;flex-direction:column;gap:2px;">
+                                    <span style="font-family:monospace;color:var(--info);font-size:11px;">${p.buyer_sku_code||'-'}</span>
+                                    <span style="font-size:11px;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${desc}</span>
+                                </span>
+                                <span style="display:flex;flex-direction:column;align-items:flex-end;">
+                                    <span class="price">${formatSaldo(priceModal)}</span>
+                                    <span class="sell">${formatSaldo(priceSell)}</span>
+                                </span>
+                                <span style="grid-column:4;">${stockHtml}</span>
+                            </div>`;
+                        });
+                        html+=`</div></div>`;
+                    });
+                    html+=`</div>`;
+                    document.getElementById('pricelistResponse').innerHTML=html;
+                    showToast(`Ditemukan ${d.total} produk dalam ${d.totalGames||d.groups.length} brand`,'success');
+                    addLog('Price List','success',`${d.total} produk${d.fromCache?' (cache)':''}`);
+                } else {
+                    document.getElementById('pricelistResponse').innerHTML=`<div class="placeholder"><div class="icon">📭</div><p>Tidak ada produk ditemukan.</p></div>`;
+                    showToast('Tidak ada produk','warning');
+                    addLog('Price List','info','0 produk');
+                }
+            }catch(e){displayResponse('pricelistResponse',{success:false,error:{message:e.message}},'Price List',null);addLog('Price List','error',e.message);showToast('Error: '+e.message,'error');}
+        }
+
+        async function refreshPriceList() {
+            loadPriceList();
+        }
+
+        function toggleBrand(id) {
+            const el=document.getElementById(`brand-${id}`);
+            const arrow=document.getElementById(`arrow-${id}`);
+            if(el.classList.contains('open')){el.classList.remove('open');arrow.classList.remove('open');}
+            else{el.classList.add('open');arrow.classList.add('open');}
+        }
+
+        function expandAll() {
+            document.querySelectorAll('.brand-items').forEach(el=>el.classList.add('open'));
+            document.querySelectorAll('.arrow').forEach(el=>el.classList.add('open'));
+        }
+
+        // ===================== TRANSACTION =====================
+        async function doTransaction() {
+            const sku=document.getElementById('transSku').value.trim();
+            const custId=document.getElementById('transCustomerId').value.trim();
+            const custServer=document.getElementById('transCustomerServer').value.trim();
+            const ref=document.getElementById('transRefId').value.trim();
+            const testing=document.getElementById('transTesting').checked;
+            if(!sku||!custId||!ref){showToast('Kode Produk, ID Game, dan Ref ID wajib!','error');return;}
+            const customer_no = custServer ? `${custId}.${custServer}` : custId;
+            const btn=document.getElementById('transBtn'); btn.disabled=true; btn.innerHTML='<span class="spinner"></span> Memproses...';
+            try{
+                const body={buyer_sku_code:sku,customer_no,ref_id:ref,testing};
+                const r=await fetch('/api/transaction',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                const d=await r.json();
+                displayResponse('transactionResponse',d,'Topup',d.rc_info||null);
+                const rc=d.data?.data?.rc||d.data?.rc||d.rc||'';
+                const st=d.data?.data?.status||d.data?.status||'';
+                const msg=d.data?.data?.message||d.data?.message||d.message||'';
+                const rcInfo = d.rc_info||{};
+                if(d.success&&(rc==='00'||st==='Sukses')){showToast(`✅ Berhasil! Ref: ${ref}`,'success');addLog(`Topup ${sku}`,'success',`${customer_no} Sukses`);}
+                else if(rc==='03'||st==='Pending'){showToast(`⏳ Pending - ${rcInfo.message||''}`,'warning');addLog(`Topup ${sku}`,'pending',`${customer_no} Pending (${rc})`);}
+                else{showToast(`❌ ${rcInfo.message||msg||'Gagal'} (RC: ${rc})`,'error');addLog(`Topup ${sku}`,'error',`${customer_no} ${msg||rc} (${rc})`);}
+                // Store last transaction and start auto-polling
+                state.lastTx={sku,customer_no,ref_id:ref,testing};
+                if(rc==='03'||st==='Pending'){startAutoPoll();}
+            }catch(e){displayResponse('transactionResponse',{success:false,error:{message:e.message}},'Topup',null);showToast('Error: '+e.message,'error');addLog('Topup','error',e.message);}
+            finally{btn.disabled=false;btn.innerHTML='🚀 Topup';}
+        }
+
+        // ===================== AUTO STATUS POLLING =====================
+        function startAutoPoll(){
+            stopAutoPoll();
+            state.pollCount=0;
+            state.pollInterval=setInterval(()=>pollStatus(),15000);
+            showToast('🔄 Auto cek status setiap 15 detik...','info',5000);
+            addLog('Auto-Poll','info','Mulai auto cek status');
+        }
+
+        function stopAutoPoll(){
+            if(state.pollInterval){clearInterval(state.pollInterval);state.pollInterval=null;}
+        }
+
+        async function pollStatus(){
+            if(!state.lastTx)return;
+            state.pollCount++;
+            if(state.pollCount>20){stopAutoPoll();showToast('⛔ Auto-poll dihentikan (max 20x). Gunakan refresh manual.','warning');return;}
+            try{
+                const body={ref_id:state.lastTx.ref_id,buyer_sku_code:state.lastTx.sku,customer_no:state.lastTx.customer_no,type:'prepaid'};
+                const r=await fetch('/api/cek-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                const d=await r.json();
+                const rc=d.data?.data?.rc||d.data?.rc||d.rc||'';
+                const st=d.data?.data?.status||d.data?.status||'';
+                const sn=d.data?.data?.sn||d.data?.sn||'';
+                const rcInfo=d.rc_info||{};
+                if(rc==='00'||st==='Sukses'){
+                    stopAutoPoll();
+                    const msg=sn?`${rcInfo.message||'Sukses'}. SN: ${sn}`:`✅ Transaksi Sukses!`;
+                    showToast(msg,'success',8000);
+                    addLog('Auto-Poll','success',`Sukses (${state.pollCount}x cek)`);
+                    displayResponse('transactionResponse',d,'Status Update',null);
+                }else if(rc==='03'||st==='Pending'){
+                    addLog('Auto-Poll','info',`Masih Pending... (cek #${state.pollCount})`);
+                }else{
+                    stopAutoPoll();
+                    showToast(`❌ ${rcInfo.message||'Gagal'} (RC: ${rc})`,'error');
+                    addLog('Auto-Poll','error',`Gagal (RC: ${rc})`);
+                    displayResponse('transactionResponse',d,'Status Update',rcInfo);
+                }
+            }catch(e){addLog('Auto-Poll','error',e.message);}
+        }
+
+        async function refreshStatus(){
+            if(!state.lastTx){showToast('Tidak ada transaksi untuk dicek.','warning');return;}
+            setLoading('statusResponse','Cek status...');
+            try{
+                const body={ref_id:state.lastTx.ref_id,buyer_sku_code:state.lastTx.sku,customer_no:state.lastTx.customer_no,type:'prepaid'};
+                const r=await fetch('/api/cek-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                const d=await r.json();
+                displayResponse('statusResponse',d,'Cek Status Manual',d.rc_info||null);
+                const rc=d.data?.data?.rc||d.data?.rc||d.rc||'';
+                const st=d.data?.data?.status||d.data?.status||'';
+                const rcInfo=d.rc_info||{};
+                if(rc==='00'||st==='Sukses'){showToast('✅ Transaksi Sukses!','success');stopAutoPoll();}
+                else if(rc==='03'||st==='Pending'){showToast('⏳ Masih Pending...','warning');}
+                else{showToast(`ℹ️ ${rcInfo.message||'Info'} (RC: ${rc})`,'info');}
+                addLog('Status Manual',rc==='00'?'success':'info',`${state.lastTx.ref_id} (${rc})`);
+            }catch(e){showToast('Error: '+e.message,'error');}
+        }
+
+        // ===================== CEK STATUS =====================
+        async function cekStatus() {
+            showTab('cekstatus');
+            const ref_id=document.getElementById('statusRefId').value.trim();
+            const buyer_sku_code=document.getElementById('statusSku').value.trim();
+            const custId=document.getElementById('statusCustomerId').value.trim();
+            const custServer=document.getElementById('statusCustomerServer').value.trim();
+            const type=document.getElementById('statusType').value;
+            if(!ref_id||!buyer_sku_code||!custId){showToast('Ref ID, Kode Produk, dan ID Game wajib!','error');return;}
+            const customer_no=custServer?`${custId}.${custServer}`:custId;
+            setLoading('statusResponse','Mengecek...');
+            try{
+                const body={ref_id,buyer_sku_code,customer_no,type};
+                const r=await fetch('/api/cek-status',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+                const d=await r.json();
+                displayResponse('statusResponse',d,'Cek Status',d.rc_info||null);
+                const rc=d.data?.data?.rc||d.data?.rc||d.rc||'';
+                const st=d.data?.data?.status||d.data?.status||'';
+                const rcInfo=d.rc_info||{};
+                if(rc==='00')showToast(`✅ Sukses (${type})`,'success');
+                else if(rc==='03'||st==='Pending')showToast('⏳ Pending','warning');
+                else showToast(`ℹ️ ${rcInfo.message||'Info'} (RC: ${rc})`,'info');
+                addLog('Cek Status',rc==='00'?'success':'info',`${type} ${ref_id} (${rc})`);
+            }catch(e){displayResponse('statusResponse',{success:false,error:{message:e.message}},'Cek Status',null);showToast('Error: '+e.message,'error');}
+        }
+
+        // ===================== CLEAR CACHE =====================
+        async function clearCache() {
+            document.getElementById('priceSearch').value='';
+            document.getElementById('pricelistResponse').innerHTML=`<div class="placeholder"><div class="icon">🔄</div><p>Refresh dengan klik "🔄 Refresh" di tab Harga.</p></div>`;
+            showToast('Cache ditandai refresh. Klik "Refresh" di tab Harga untuk update.','info');
+            addLog('Cache','info','Refresh diminta');
+        }
+
+        // ===================== RC MODAL =====================
+        async function openRcModal() {
+            document.getElementById('rcModal').classList.add('active');
+            document.getElementById('rcModalContent').innerHTML='<p style="color:var(--text-muted)">Memuat...</p>';
+            try{
+                const r=await fetch('/api/rc-codes'); const d=await r.json();
+                if(d.success&&d.data){
+                    let h=`<table><thead><tr><th>RC</th><th>Message</th><th>Status</th><th>Solusi</th></tr></thead><tbody>`;
+                    Object.entries(d.data).forEach(([rc,info])=>{
+                        const cls=info.status==='success'?'success':info.status==='pending'?'pending':'error';
+                        h+=`<tr>
+                            <td style="font-weight:600;font-family:monospace;font-size:14px;">${rc}</td>
+                            <td>${info.message}</td>
+                            <td><span class="status-chip ${cls}">${info.status.toUpperCase()}</span></td>
+                            <td style="font-size:11px;color:var(--text-muted);">${info.solusi||'-'}</td>
+                        </tr>`;
+                    });
+                    h+=`</tbody></table>`;
+                    document.getElementById('rcModalContent').innerHTML=h;
+                }
+            }catch(e){document.getElementById('rcModalContent').innerHTML='<p style="color:var(--danger)">Gagal load</p>';}
+        }
+        function closeRcModal(){document.getElementById('rcModal').classList.remove('active');}
+        document.getElementById('rcModal').addEventListener('click',function(e){if(e.target===this)closeRcModal();});
+
+        // ===================== HELPERS =====================
+        function setLoading(el,txt){
+            document.getElementById(el).innerHTML=`<div class="response-viewer"><div class="hdr"><span>${txt}</span><span class="spinner" style="width:12px;height:12px;border:2px solid rgba(255,255,255,.3);border-top-color:white;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;"></span></div></div>`;
+        }
+
+        function displayResponse(el,data,title,rcInfo){
+            const c=document.getElementById(el);
+            const ok=data.success;
+            const st=ok?'success':(data.data?.data?.status==='Pending'||data.data?.data?.rc==='03'?'pending':'error');
+            const stt=ok?'Success':(data.data?.data?.status||'Error');
+            let j='';
+            try{j=syntaxHighlight(JSON.stringify(data.data||data,null,2));}catch(e){j=syntaxHighlight(JSON.stringify({error:e.message},null,2));}
+
+            let extraHtml = '';
+            if (!ok && rcInfo) {
+                extraHtml = `<div class="error-detail">
+                    <span class="rc-code">RC ${data.rc||''}</span>
+                    <div class="rc-msg">${rcInfo.message||''}</div>
+                    <div class="rc-solusi">💡 ${rcInfo.solusi||'Tidak ada solusi spesifik.'}</div>
+                </div>`;
+            } else if (!ok && data.debug) {
+                const dbg = data.debug;
+                extraHtml = `<div class="error-detail">
+                    <span class="rc-code">🔍 Debug Info</span>
+                    <div class="rc-msg" style="font-size:11px;color:var(--text-muted);">
+                        <b>Username:</b> ${dbg.username||'?'}<br>
+                        <b>Key Prefix:</b> ${dbg.apiKeyPrefix||dbg.apiKeyFirst8||'?'}<br>
+                        <b>Key Length:</b> ${dbg.apiKeyLength||'?'} chars<br>
+                        <b>Active Mode:</b> ${dbg.activeMode||'?'}<br>
+                        <b>Key Source:</b> ${dbg.keySource||'?'}<br>
+                        ${dbg.hint ? `<br><b>💡 Solusi:</b><br>${dbg.hint.replace(/\n/g,'<br>')}` : ''}
+                    </div>
+                </div>`;
+            } else if (!ok && data.rc) {
+                extraHtml = `<div class="error-detail">
+                    <span class="rc-code">RC ${data.rc}</span>
+                    <div class="rc-msg">${data.message||'Error'}</div>
+                </div>`;
+            }
+
+            c.innerHTML=`<div class="response-viewer">
+                <div class="hdr">
+                    <span><span class="dot ${st}"></span> ${title} - ${stt} <span style="color:var(--gray,#636E72);font-size:10px;margin-left:6px;">${new Date().toLocaleTimeString()}</span></span>
+                    <span style="display:flex;gap:4px;"><button class="btn btn-outline btn-xs" onclick="copyResponse(this)">📋</button></span>
+                </div>
+                ${extraHtml}
+                <div class="body">${j}</div>
+            </div>`;
+        }
+
+        function copyResponse(btn){
+            const b=btn.closest('.response-viewer').querySelector('.body').textContent;
+            navigator.clipboard.writeText(b).then(()=>showToast('Copied 📋','success')).catch(()=>showToast('Gagal','error'));
+        }
+
+        function syntaxHighlight(j){
+            return j.replace(/&/g,'&').replace(/</g,'<').replace(/>/g,'>')
+                .replace(/"([^"]+)":/g,'<span class="json-key">"$1"</span>:')
+                .replace(/: "([^"]+)"/g,': <span class="json-string">"$1"</span>')
+                .replace(/: (\d+\.?\d*)/g,': <span class="json-number">$1</span>')
+                .replace(/: (true|false)/g,': <span class="json-boolean">$1</span>')
+                .replace(/: (null)/g,': <span class="json-null">$1</span>');
+        }
+
+        // ===================== DEBUG SIGN =====================
+        async function debugSign() {
+            try {
+                const r=await fetch('/api/debug-sign'); const d=await r.json();
+                if(d.success) {
+                    const dbg=d.debug;
+                    let h=`<div class="response-viewer"><div class="hdr"><span>⚡ Debug Signature</span></div><div class="body" style="font-size:12px;">`;
+                    h+=`<b>Username:</b> ${dbg.username}<br>`;
+                    h+=`<b>Key:</b> ${dbg.apiKeyPrefix} (${dbg.apiKeyLength} chars)<br>`;
+                    h+=`<b>Mode:</b> ${dbg.isDevelopment?'Development':'Production'} (Key: ${dbg.activeKeySource})<br><br>`;
+                    h+=`<b>📝 Formula:</b> md5(username + apiKey + extra)<br><br>`;
+                    h+=`<b>Signature Examples:</b><br>`;
+                    Object.entries(dbg.formulas).forEach(([k,v])=>{
+                        h+=`• <b>${k}</b>: <code style="color:var(--success);background:rgba(0,0,0,.3);padding:1px 4px;border-radius:3px;">${v.split('= ')[1]||v}</code><br>`;
+                    });
+                    h+=`<br><b>⚠️ If RC 41/45:</b><br>1) IP belum di-whitelist<br>2) Key Dev vs Prod mismatch<br>3) Key typo/spasi<br></div></div>`;
+                    showTab('dashboard');
+                    document.querySelector('#tab-dashboard .card').insertAdjacentHTML('afterbegin',h);
+                    showToast('Debug info loaded','info');
+                } else {
+                    showToast(d.message||'Konfigurasi belum diisi','warning');
+                }
+            } catch(e) {
+                showToast('Error: '+e.message,'error');
+            }
+        }
+
+        // ===================== LOGS =====================
+        function addLog(action,status,msg){
+            const n=new Date();const t=n.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+            state.logs.unshift({time:t,action,status,message:msg});renderLogs();
+        }
+        function renderLogs(){
+            const c=document.getElementById('logSidebar');
+            if(!state.logs.length){c.innerHTML='<div style="color:var(--gray,#636E72);font-size:11px;text-align:center;padding:20px;">Belum ada log.</div>';return;}
+            let h='';state.logs.slice(0,100).forEach(l=>{h+=`<div class="log-item"><span class="time">${l.time}</span> <span class="status ${l.status}">${l.status.toUpperCase()}</span> <span class="msg">${l.action} ${l.message}</span></div>`;});
+            c.innerHTML=h;
+        }
+        function clearLogs(){state.logs=[];renderLogs();showToast('Log dibersihkan 🗑️','info');}
+    </script>
+</body>
+</html>
