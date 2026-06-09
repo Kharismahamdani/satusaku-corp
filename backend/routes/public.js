@@ -20,9 +20,19 @@ const SKU_PREFIX_MAP = [
   { prefixes: ['HOK', 'HONOR OF KINGS'], name: 'Honor of Kings' }
 ];
 
-function guessBrand(name, sku) {
+function guessBrand(name, sku, apiBrand) {
   if (!name) name = '';
   if (!sku) sku = '';
+  // First, try matching the API brand field directly
+  if (apiBrand) {
+    const b = apiBrand.toUpperCase().trim();
+    for (const entry of SKU_PREFIX_MAP) {
+      for (const p of entry.prefixes) {
+        const pUpper = p.toUpperCase();
+        if (b === pUpper || b.includes(pUpper)) return entry.name;
+      }
+    }
+  }
   for (const entry of SKU_PREFIX_MAP) {
     for (const p of entry.prefixes) {
       if (sku.toUpperCase().startsWith(p.toUpperCase())) return entry.name;
@@ -60,7 +70,7 @@ async function syncProductsFromDigiflazz() {
     products.forEach(p => {
       const modal = p.price || 0;
       const sell = Math.round(modal * (1 + markup));
-      insertStmt.run(p.buyer_sku_code, p.product_name || '', guessBrand(p.product_name, p.buyer_sku_code), '', modal, sell, p.stock || 0, p.unlimited_stock ? 1 : 0, 1);
+      insertStmt.run(p.buyer_sku_code, p.product_name || '', guessBrand(p.product_name, p.buyer_sku_code, p.brand), '', modal, sell, p.stock || 0, p.unlimited_stock ? 1 : 0, 1);
     });
   } catch (e) {
     console.error('Sync products error:', e.message);
